@@ -78,8 +78,31 @@ bool MovePawn(bool which_side, position * cur_pos, int pawnPos[2], char Promotio
     return true;
 }
 
-bool PawnCapture(int * in_pos[], bool which_side, int *SSide[], int *GenBoard[], int pawnPos[2], int piecePos[2]) {
+int ** PawnMoves() {
 
     
+
+}
+
+void KnightMoves(bool which_side, position * cur_pos, int KnightPos[2], int * KnightMoves[2]) {
+
+    int x = KnightPos[0]; int y = KnightPos[1];
+
+    //this is the painful, but obvious solution
+    //Now I'm curious as to wheter there's a fancy way of doing this
+    KnightMoves[0][0] = x + 1; KnightMoves[0][1] = y + 2;
+    KnightMoves[1][0] = x - 1; KnightMoves[1][1] = y + 2;
+    KnightMoves[2][0] = x + 1; KnightMoves[2][1] = y - 2;
+    KnightMoves[3][0] = x - 1; KnightMoves[3][1] = y - 2;
+    KnightMoves[4][0] = x + 2; KnightMoves[4][1] = y + 1;
+    KnightMoves[5][0] = x + 2; KnightMoves[5][1] = y - 1;
+    KnightMoves[6][0] = x + 2; KnightMoves[6][1] = y + 1;
+    KnightMoves[7][0] = x + 2; KnightMoves[7][1] = y - 1;
+
+}
+
+void KingMoves(bool which_side, position * cur_pos, int KingPos[2], int * KingMoves[2]) {
+
+    int x = KingPos[0]; int y = KingPos[1];
 
 }
