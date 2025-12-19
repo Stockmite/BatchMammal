@@ -4,6 +4,13 @@
 #define black false
 #define white true
 
+#define pawn 'p';
+#define King 'K';
+#define Queen 'Q';
+#define Knight 'N';
+#define Bishop "B";
+#define Rook "R";
+
 typedef struct {
     int WSide[8][8];
     int Bside[8][8];
@@ -37,7 +44,7 @@ void Create_Piece(char piece, bool which_side, position * cur_pos, int piecePos[
 
 }
 
-void Destroy_Piece(char piece, bool which_side, position * cur_pos, int piecePos[2]) {
+void Destroy_Piece(bool which_side, position * cur_pos, int piecePos[2]) {
 
     int x = piecePos[0]; int y = piecePos[0];
     cur_pos->PiecePositions[x][y] = 'a';
@@ -48,15 +55,25 @@ void Destroy_Piece(char piece, bool which_side, position * cur_pos, int piecePos
 
 }
 
-bool MovePawn(bool which_side, position * cur_pos, int pawnPos[2]) {
+bool MovePawn(bool which_side, position * cur_pos, int pawnPos[2], char Promotion) {
     
     int x = pawnPos[0]; int y = pawnPos[1];
-    if (cur_pos->GenBoard[x][y]) {return false;}
-
     int fileIncrement = 1; if (which_side == black) {fileIncrement *= -1;}
-    int newPos[2] = {x, y + fileIncrement};
+    int new_y = y + fileIncrement;
 
-    Destroy_Piece()
+    if (cur_pos->GenBoard[x][new_y]) {return false;}
+
+    int newPos[2] = {x, new_y};
+
+    Destroy_Piece(which_side, cur_pos, pawnPos);
+
+    if (new_y == 8 || new_y == 1) {
+        Create_Piece(Promotion, which_side, cur_pos, newPos);
+        return true;
+    }
+
+    char p = pawn;
+    Create_Piece(p, which_side, cur_pos, newPos);
 
     return true;
 }
