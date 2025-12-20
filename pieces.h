@@ -24,6 +24,7 @@ typedef struct {
     bool HasHBrookMoved; //And I can't be bothered to come up with a more clever way of doing this
     bool IsWBackrankAttacked;
     bool IsBBackrankAttacked;
+    int LastMove[2];
 
 } position;
 
@@ -39,6 +40,12 @@ void GetGeneralBoard(int * BlackSide[], int * WhiteSide[], int * GeneralBoard[])
     }  
 
 
+}
+
+bool DoesSquareExist(int l, int f) {
+
+    if ((l>0 || l<7) || (f>7 || f<0)) {return false;}
+    return true;
 }
 
 void Create_Piece(char piece, bool which_side, position * cur_pos, int piecePos[2]) {
@@ -86,15 +93,42 @@ bool MovePawn(bool which_side, position * cur_pos, int pawnPos[2], char Promotio
     return true;
 }
 
-bool DoesSquareExist(int l, int f) {
+void PawnMoves(bool which_side, position * cur_pos, int PawnPos[2], int * PawnMoves[2]) {
+    //Behold: if statements!
+    int count = 0;
+    int x = PawnPos[0]; int y = PawnPos[1];
+    int PawnWall = 1;
+    int fileIncrement = 1; if (which_side == black) {fileIncrement *= -1; PawnWall = 6;}
+    int new_y = y + fileIncrement;
 
-    if ((l>0 || l<7) || (f>7 || f<0)) {return false;}
-    return true;
-}
+    int poscap1 = cur_pos->Bside[x + 1][new_y];
+    int poscap2 = cur_pos->Bside[x - 1][new_y];
 
-int ** PawnMoves() {
+    if (which_side == black) {
+        poscap1 = cur_pos->WSide[x + 1][new_y];
+        poscap2 = cur_pos->WSide[x - 1][new_y];
+    }
 
+    if (!cur_pos->GenBoard[x][new_y]) {
+        PawnMoves[count][0] = x; PawnMoves[count][1] = new_y; count++;
+    }
+
+    int new_y2 = new_y + fileIncrement;
+    if (y==PawnWall && !cur_pos->GenBoard[x][new_y2]) {
+        PawnMoves[count][0] = x; PawnMoves[count][1] = new_y2; count++;
+    }
+
+    if (poscap1) {
+        PawnMoves[count][0] = x + 1; PawnMoves[count][1] = new_y; count++;
+    }
+    if (poscap2) {
+        PawnMoves[count][0] = x - 1; PawnMoves[count][1] = new_y; count++;
+    }
     
+    int rec_x = cur_pos->LastMove[0]; int rec_y = cur_pos->LastMove[1];
+    if (rec_y == y && cur_pos->PiecePositions[rec_x][rec_y] == 'p') {
+        PawnMoves[count][0] = rec_x; PawnMoves[count][1] = rec_y;
+    }
 
 }
 
@@ -102,16 +136,22 @@ void KnightMoves(bool which_side, position * cur_pos, int KnightPos[2], int * Kn
 
     int x = KnightPos[0]; int y = KnightPos[1];
 
-    //this is the painful, but obvious solution
-    //Now I'm curious as to wheter there's a fancy way of doing this
-    KnightMoves[0][0] = x + 1; KnightMoves[0][1] = y + 2;
-    KnightMoves[1][0] = x - 1; KnightMoves[1][1] = y + 2;
-    KnightMoves[2][0] = x + 1; KnightMoves[2][1] = y - 2;
-    KnightMoves[3][0] = x - 1; KnightMoves[3][1] = y - 2;
-    KnightMoves[4][0] = x + 2; KnightMoves[4][1] = y + 1;
-    KnightMoves[5][0] = x + 2; KnightMoves[5][1] = y - 1;
-    KnightMoves[6][0] = x + 2; KnightMoves[6][1] = y + 1;
-    KnightMoves[7][0] = x + 2; KnightMoves[7][1] = y - 1;
+    int count = 0;
+    for (int b = -2; b <= 2; b + 4) {
+            for (int a = -1; a <= 1; a + 2) {
+                int x1 = x+a; int x2 = x+b;
+                int y1 = y+b; int y2 = y+a;
+
+                if (DoesSquareExist(x1, y1)) {
+                    KnightMoves[count][0] = x1; KnightMoves[count][1] = y1;
+                    count++;
+                }
+                if (DoesSquareExist(x2, y2)) {
+                    KnightMoves[count][0] = x2; KnightMoves[count][1] = y2;
+                    count++;
+                }
+            }
+        }
 
 }
 
