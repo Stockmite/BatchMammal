@@ -16,6 +16,12 @@ typedef struct {
     int Bside[8][8];
     int GenBoard[8][8]; //feels useful enough to define it as a value rather than just rederiving it
     char PiecePositions[8][8];
+    bool HasBKingMoved;
+    bool HasWKingMoved;
+    bool HasAWrookMoved;
+    bool HasHWrookMoved;
+    bool HasABrookMoved;
+    bool HasHBrookMoved;
 
 } position;
 
@@ -102,7 +108,19 @@ void KnightMoves(bool which_side, position * cur_pos, int KnightPos[2], int * Kn
 }
 
 void KingMoves(bool which_side, position * cur_pos, int KingPos[2], int * KingMoves[2]) {
+    //TODO: Add checks and attacks into consideration for all pieces
 
     int x = KingPos[0]; int y = KingPos[1];
+    int count = 0;
+
+    for (int a = -1; a < 2; a++) {
+        for (int b = -1; b < 2; b++) {
+            if (x + a == x && y + b == y) {continue;}
+            KingMoves[count][0] = x + a; KingMoves[count][1] = y + b;
+            count++;
+        }
+    }
+
+
 
 }
