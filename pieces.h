@@ -20,8 +20,10 @@ typedef struct {
     bool HasWKingMoved;
     bool HasAWrookMoved;
     bool HasHWrookMoved;
-    bool HasABrookMoved;
-    bool HasHBrookMoved;
+    bool HasABrookMoved; //Looks ugly, but is dramatically more efficient than checking the position each time,
+    bool HasHBrookMoved; //And I can't be bothered to come up with a more clever way of doing this
+    bool IsWBackrankAttacked;
+    bool IsBBackrankAttacked;
 
 } position;
 
@@ -84,6 +86,12 @@ bool MovePawn(bool which_side, position * cur_pos, int pawnPos[2], char Promotio
     return true;
 }
 
+bool DoesSquareExist(int l, int f) {
+
+    if ((l>0 || l<7) || (f>7 || f<0)) {return false;}
+    return true;
+}
+
 int ** PawnMoves() {
 
     
@@ -108,19 +116,44 @@ void KnightMoves(bool which_side, position * cur_pos, int KnightPos[2], int * Kn
 }
 
 void KingMoves(bool which_side, position * cur_pos, int KingPos[2], int * KingMoves[2]) {
-    //TODO: Add checks and attacks into consideration for all pieces
 
     int x = KingPos[0]; int y = KingPos[1];
     int count = 0;
 
     for (int a = -1; a < 2; a++) {
         for (int b = -1; b < 2; b++) {
-            if (x + a == x && y + b == y) {continue;}
+            int new_x = x+a; int new_y =y+b;
+            if ((new_x== x && new_y == y) || !DoesSquareExist(new_x, new_y)) {continue;}
+
             KingMoves[count][0] = x + a; KingMoves[count][1] = y + b;
             count++;
         }
     }
 
+    bool HasSKingMoved = cur_pos->HasWKingMoved;
+    bool IsSBackrakAttacked = cur_pos->IsWBackrankAttacked;
+    bool HasSARookMoved = cur_pos->HasAWrookMoved;
+    bool HasSHRookMoved = cur_pos->HasHWrookMoved;
+    bool IsSBackrakAttacked = cur_pos->IsWBackrankAttacked;
+    int backrank = 0;
 
+    if (which_side == black) {
+        HasSKingMoved = cur_pos->HasBKingMoved;
+        HasSARookMoved = cur_pos->HasABrookMoved;
+        HasSHRookMoved = cur_pos->HasHBrookMoved;
+        IsSBackrakAttacked = cur_pos->IsBBackrankAttacked;
+        backrank = 7;
+    }
+
+    if (!(HasSKingMoved && IsSBackrakAttacked)) {
+        if (!HasSARookMoved) {
+            count++;
+            KingMoves[count][0] = 3;KingMoves[count][1] = backrank;
+        }
+        if (!HasSHRookMoved) {
+            count++;
+            KingMoves[count][0] = 6;KingMoves[count][1] = backrank;
+        }
+    }
 
 }
