@@ -220,11 +220,11 @@ void KingMoves(bool which_side, position * cur_pos, int KingPos[2], int * KingMo
 
 void BishopMoves(bool which_side, position * cur_pos, int BishopPos[2], int * BishopMoves[2]) {
 
-    int x = BishopPos[0]; int y = BishopPos[1];
-
-    int count = 0;
-
-    int new_x = x; int new_y = y;
+    int control = 0;
+    int Increment[2] = {1,1}; control = GetAttack(BishopPos, cur_pos, Increment, BishopMoves, control);
+    Increment[0] = -1; control = GetAttack(BishopPos, cur_pos, Increment, BishopMoves, control);
+    Increment[1] = -1; control = GetAttack(BishopPos, cur_pos, Increment, BishopMoves, control);
+    Increment[0] = 1; control = GetAttack(BishopPos, cur_pos, Increment, BishopMoves, control);
 
 }
 
