@@ -218,7 +218,7 @@ void KingMoves(bool which_side, position * cur_pos, int KingPos[2], int * KingMo
 
 }
 
-void BishopMoves(bool which_side, position * cur_pos, int BishopPos[2], int * BishopMoves[2]) {
+int BishopMoves(bool which_side, position * cur_pos, int BishopPos[2], int * BishopMoves[2]) {
 
     int control = 0;
     int Increment[2] = {1,1}; control = GetAttack(BishopPos, cur_pos, Increment, BishopMoves, control);
@@ -226,9 +226,11 @@ void BishopMoves(bool which_side, position * cur_pos, int BishopPos[2], int * Bi
     Increment[1] = -1; control = GetAttack(BishopPos, cur_pos, Increment, BishopMoves, control);
     Increment[0] = 1; control = GetAttack(BishopPos, cur_pos, Increment, BishopMoves, control);
 
+    return control;
+
 }
 
-void RookMoves(bool which_side, position * cur_pos, int RookPos[2], int * RookMoves[2]) {
+int RookMoves(bool which_side, position * cur_pos, int RookPos[2], int * RookMoves[2]) {
 
     int control = 0;
     int Increment[2] = {1,0}; control = GetAttack(RookPos, cur_pos, Increment, RookMoves, control);
@@ -236,5 +238,14 @@ void RookMoves(bool which_side, position * cur_pos, int RookPos[2], int * RookMo
     Increment[0] = 0;
     Increment[1] = 1; control = GetAttack(RookPos, cur_pos, Increment, RookMoves, control);
     Increment[1] = -1; control = GetAttack(RookPos, cur_pos, Increment, RookMoves, control);
+
+    return control;
+
+}
+
+void QueenMoves(bool which_side, position * cur_pos, int QueenPos[2], int * QueenMoves[2]) {
+
+    int control = RookMoves(which_side, cur_pos, QueenPos, QueenMoves);
+    BishopMoves(which_side, cur_pos, QueenPos, QueenMoves+control);
 
 }
