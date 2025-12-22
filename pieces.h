@@ -48,6 +48,26 @@ bool DoesSquareExist(int l, int f) {
     return true;
 }
 
+int GetAttack(int pos[2], position * cur_pos, int Increment[2], int * ControlledSquares[2], int control) {
+
+    int x = pos[0]; int y = pos[1];
+    int buf_x = x; int buf_y = y;
+    int control_buf = control;
+
+    while (true) {
+
+        buf_x += Increment[0]; buf_y += Increment[1];
+        if (!DoesSquareExist(buf_x, buf_y) || cur_pos->GenBoard[buf_x][buf_y]) {break;}
+
+        ControlledSquares[control_buf][0] = buf_x; ControlledSquares[control_buf][1] = buf_y;
+        control_buf++;
+
+    }
+
+    return control_buf;
+
+}
+
 void Create_Piece(char piece, bool which_side, position * cur_pos, int piecePos[2]) {
 
     int x = piecePos[0]; int y = piecePos[0];
@@ -208,8 +228,13 @@ void BishopMoves(bool which_side, position * cur_pos, int BishopPos[2], int * Bi
 
 }
 
-void RookMoves(bool which_side, position * cur_pos, int BishopPos[2], int * BishopMoves[2]) {
+void RookMoves(bool which_side, position * cur_pos, int RookPos[2], int * RookMoves[2]) {
 
-
+    int control = 0;
+    int Increment[2] = {1,0}; control = GetAttack(RookPos, cur_pos, Increment, RookMoves, control);
+    Increment[0] = -1; control = GetAttack(RookPos, cur_pos, Increment, RookMoves, control);
+    Increment[0] = 0;
+    Increment[1] = 1; control = GetAttack(RookPos, cur_pos, Increment, RookMoves, control);
+    Increment[1] = -1; control = GetAttack(RookPos, cur_pos, Increment, RookMoves, control);
 
 }
