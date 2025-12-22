@@ -48,7 +48,16 @@ bool DoesSquareExist(int l, int f) {
     return true;
 }
 
-int GetAttack(int pos[2], position * cur_pos, int Increment[2], int * ControlledSquares[2], int control) {
+bool DoesSquareHaveEnemyPiece(position * cur_pos, int x, int y, bool which_side) {
+    
+    bool has_piece = cur_pos->WSide[x][y];
+    if (which_side == black) {has_piece = cur_pos->Bside[x][y];}
+
+    return has_piece;
+
+}
+
+int GetAttack(int pos[2], position * cur_pos, int Increment[2], int * ControlledSquares[2], int control, bool which_side) {
 
     int x = pos[0]; int y = pos[1];
     int buf_x = x; int buf_y = y;
@@ -57,10 +66,11 @@ int GetAttack(int pos[2], position * cur_pos, int Increment[2], int * Controlled
     while (true) {
 
         buf_x += Increment[0]; buf_y += Increment[1];
-        if (!DoesSquareExist(buf_x, buf_y) || cur_pos->GenBoard[buf_x][buf_y]) {break;}
+        if (!DoesSquareExist(buf_x, buf_y)) {break;}
 
         ControlledSquares[control_buf][0] = buf_x; ControlledSquares[control_buf][1] = buf_y;
         control_buf++;
+        if (DoesSquareHaveEnemyPiece(cur_pos, buf_x, buf_y, which_side)) {break;}
 
     }
 
@@ -162,11 +172,11 @@ void KnightMoves(bool which_side, position * cur_pos, int KnightPos[2], int * Kn
                 int x1 = x+a; int x2 = x+b;
                 int y1 = y+b; int y2 = y+a;
 
-                if (DoesSquareExist(x1, y1)) {
+                if (DoesSquareExist(x1, y1) && DoesSquareHaveEnemyPiece(cur_pos, x1, y1, which_side)) {
                     KnightMoves[count][0] = x1; KnightMoves[count][1] = y1;
                     count++;
                 }
-                if (DoesSquareExist(x2, y2)) {
+                if (DoesSquareExist(x2, y2) && DoesSquareHaveEnemyPiece(cur_pos, x2, y2, which_side)) {
                     KnightMoves[count][0] = x2; KnightMoves[count][1] = y2;
                     count++;
                 }
@@ -184,6 +194,7 @@ void KingMoves(bool which_side, position * cur_pos, int KingPos[2], int * KingMo
         for (int b = -1; b < 2; b++) {
             int new_x = x+a; int new_y =y+b;
             if ((new_x== x && new_y == y) || !DoesSquareExist(new_x, new_y)) {continue;}
+            if (!DoesSquareHaveEnemyPiece(cur_pos, new_x, new_y, which_side)) {continue;}
 
             KingMoves[count][0] = x + a; KingMoves[count][1] = y + b;
             count++;
@@ -221,10 +232,10 @@ void KingMoves(bool which_side, position * cur_pos, int KingPos[2], int * KingMo
 int BishopMoves(bool which_side, position * cur_pos, int BishopPos[2], int * BishopMoves[2]) {
 
     int control = 0;
-    int Increment[2] = {1,1}; control = GetAttack(BishopPos, cur_pos, Increment, BishopMoves, control);
-    Increment[0] = -1; control = GetAttack(BishopPos, cur_pos, Increment, BishopMoves, control);
-    Increment[1] = -1; control = GetAttack(BishopPos, cur_pos, Increment, BishopMoves, control);
-    Increment[0] = 1; control = GetAttack(BishopPos, cur_pos, Increment, BishopMoves, control);
+    int Increment[2] = {1,1}; control = GetAttack(BishopPos, cur_pos, Increment, BishopMoves, control, which_side);
+    Increment[0] = -1; control = GetAttack(BishopPos, cur_pos, Increment, BishopMoves, control, which_side);
+    Increment[1] = -1; control = GetAttack(BishopPos, cur_pos, Increment, BishopMoves, control, which_side);
+    Increment[0] = 1; control = GetAttack(BishopPos, cur_pos, Increment, BishopMoves, control, which_side);
 
     return control;
 
@@ -233,11 +244,11 @@ int BishopMoves(bool which_side, position * cur_pos, int BishopPos[2], int * Bis
 int RookMoves(bool which_side, position * cur_pos, int RookPos[2], int * RookMoves[2]) {
 
     int control = 0;
-    int Increment[2] = {1,0}; control = GetAttack(RookPos, cur_pos, Increment, RookMoves, control);
-    Increment[0] = -1; control = GetAttack(RookPos, cur_pos, Increment, RookMoves, control);
+    int Increment[2] = {1,0}; control = GetAttack(RookPos, cur_pos, Increment, RookMoves, control, which_side);
+    Increment[0] = -1; control = GetAttack(RookPos, cur_pos, Increment, RookMoves, control, which_side);
     Increment[0] = 0;
-    Increment[1] = 1; control = GetAttack(RookPos, cur_pos, Increment, RookMoves, control);
-    Increment[1] = -1; control = GetAttack(RookPos, cur_pos, Increment, RookMoves, control);
+    Increment[1] = 1; control = GetAttack(RookPos, cur_pos, Increment, RookMoves, control, which_side);
+    Increment[1] = -1; control = GetAttack(RookPos, cur_pos, Increment, RookMoves, control, which_side);
 
     return control;
 
