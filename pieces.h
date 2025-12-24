@@ -50,8 +50,8 @@ void GetGeneralBoard(int * BlackSide[], int * WhiteSide[], int * GeneralBoard[])
 
 bool DoesSquareExist(int l, int f) {
 
-    if ((l>0 || l<7) || (f>7 || f<0)) {return false;}
-    return true;
+    if ((l>0 || l<7) || (f>7 || f<0)) {return true;}
+    return false;
 }
 
 bool DoesSquareHaveEnemyPiece(position * cur_pos, int x, int y, bool which_side) {
@@ -176,8 +176,8 @@ void KnightMoves(bool which_side, position * cur_pos, int KnightPos[2], move * M
     int x = KnightPos[0]; int y = KnightPos[1];
 
     int count = 0;
-    for (int b = -2; b <= 2; b + 4) {
-            for (int a = -1; a <= 1; a + 2) {
+    for (int b = -2; b <= 2; b = b + 4) {
+            for (int a = -1; a <= 1; a = a + 2) {
                 int x1 = x+a; int x2 = x+b;
                 int y1 = y+b; int y2 = y+a;
 
@@ -190,7 +190,7 @@ void KnightMoves(bool which_side, position * cur_pos, int KnightPos[2], move * M
                     count++;
                 }
                 if (DoesSquareExist(x2, y2) && (!cur_pos->GenBoard[x2][y2] || enemy_piece2)) {
-                    Moves[count].x = x2; Moves[count].x = y2;
+                    Moves[count].x = x2; Moves[count].y = y2;
                     count++;
                 }
             }
