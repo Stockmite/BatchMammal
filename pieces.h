@@ -72,12 +72,14 @@ int GetAttack(int pos[2], position * cur_pos, int Increment[2], move * Squares, 
     while (true) {
 
         buf_x += Increment[0]; buf_y += Increment[1];
-        if (!DoesSquareExist(buf_x, buf_y)) {break;}
+        bool enemy_piece = DoesSquareHaveEnemyPiece(cur_pos, buf_x, buf_y, which_side);
+
+        if (!DoesSquareExist(buf_x, buf_y) || (cur_pos->GenBoard[buf_x][buf_y] && enemy_piece)) {break;}
 
         Squares[control_buf].x = buf_x; Squares[control_buf].y = buf_y;
         Squares[control_buf].promotion = 'a';
         control_buf++;
-        if (DoesSquareHaveEnemyPiece(cur_pos, buf_x, buf_y, which_side)) {break;}
+        if (enemy_piece) {break;}
 
     }
 
@@ -182,12 +184,12 @@ void KnightMoves(bool which_side, position * cur_pos, int KnightPos[2], move * M
                 bool enemy_piece1 = DoesSquareHaveEnemyPiece(cur_pos, x1, y1, which_side);
                 bool enemy_piece2 = DoesSquareHaveEnemyPiece(cur_pos, x2, y2, which_side);
 
-                if (DoesSquareExist(x1, y1) && (cur_pos->GenBoard[x1][y1] || enemy_piece1)) {
+                if (DoesSquareExist(x1, y1) && (!cur_pos->GenBoard[x1][y1] || enemy_piece1)) {
                     
                     Moves[count].x = x1; Moves[count].y = y1;
                     count++;
                 }
-                if (DoesSquareExist(x2, y2) && (cur_pos->GenBoard[x2][y2] || enemy_piece2)) {
+                if (DoesSquareExist(x2, y2) && (!cur_pos->GenBoard[x2][y2] || enemy_piece2)) {
                     Moves[count].x = x2; Moves[count].x = y2;
                     count++;
                 }
