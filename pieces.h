@@ -179,11 +179,15 @@ void KnightMoves(bool which_side, position * cur_pos, int KnightPos[2], move * M
                 int x1 = x+a; int x2 = x+b;
                 int y1 = y+b; int y2 = y+a;
 
-                if (DoesSquareExist(x1, y1) && DoesSquareHaveEnemyPiece(cur_pos, x1, y1, which_side)) {
+                bool enemy_piece1 = DoesSquareHaveEnemyPiece(cur_pos, x1, y1, which_side);
+                bool enemy_piece2 = DoesSquareHaveEnemyPiece(cur_pos, x2, y2, which_side);
+
+                if (DoesSquareExist(x1, y1) && (cur_pos->GenBoard[x1][y1] || enemy_piece1)) {
+                    
                     Moves[count].x = x1; Moves[count].y = y1;
                     count++;
                 }
-                if (DoesSquareExist(x2, y2) && DoesSquareHaveEnemyPiece(cur_pos, x2, y2, which_side)) {
+                if (DoesSquareExist(x2, y2) && (cur_pos->GenBoard[x2][y2] || enemy_piece2)) {
                     Moves[count].x = x2; Moves[count].x = y2;
                     count++;
                 }
@@ -200,9 +204,11 @@ void KingMoves(bool which_side, position * cur_pos, int KingPos[2], move * Moves
     for (int a = -1; a < 2; a++) {
         for (int b = -1; b < 2; b++) {
             int new_x = x+a; int new_y =y+b;
-            if ((new_x== x && new_y == y) || !DoesSquareExist(new_x, new_y)) {continue;}
-            if (cur_pos->GenBoard[new_x][new_y]) {continue;}
-            if (!DoesSquareHaveEnemyPiece(cur_pos, new_x, new_y, which_side)) {continue;}
+            bool does_square_exist = DoesSquareExist(new_x, new_y);
+            bool does_square_have_enemy_piece = DoesSquareHaveEnemyPiece(cur_pos, new_x, new_y, which_side);
+
+            if ((new_x== x && new_y == y) || !does_square_exist) {continue;}
+            if (!does_square_have_enemy_piece && cur_pos->GenBoard[new_x][new_y]) {continue;}
 
             Moves[count].x = new_x; Moves[count].y = new_y;
             count++;
