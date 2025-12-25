@@ -109,27 +109,23 @@ void Destroy_Piece(bool which_side, position * cur_pos, int piecePos[2]) {
 
 }
 
-bool MovePawn(bool which_side, position * cur_pos, int pawnPos[2], char Promotion) {
-    
-    int x = pawnPos[0]; int y = pawnPos[1];
-    int fileIncrement = 1; if (which_side == black) {fileIncrement *= -1;}
-    int new_y = y + fileIncrement;
+bool CanItPromote(bool which_side, position * cur_pos, int NewPos[2], move * Moves, int *control) {
 
-    if (cur_pos->GenBoard[x][new_y]) {return false;}
+    int en_backrank = 7;
+    if (which_side == black) {en_backrank = 0;}
 
-    int newPos[2] = {x, new_y};
+    char Promotions[] = "QRBN";
 
-    Destroy_Piece(which_side, cur_pos, pawnPos);
-
-    if (new_y == 8 || new_y == 1) {
-        Create_Piece(Promotion, which_side, cur_pos, newPos);
-        return true;
+    int y = NewPos[0];
+    if (y == en_backrank) {
+        for (int a = 0; a < 4; a++) {
+            Moves[*control].x = NewPos[0]; Moves[*control].y = y;
+            Moves[*control].promotion = Promotions[a];
+            control++;
+        }
     }
 
-    char p = pawn;
-    Create_Piece(p, which_side, cur_pos, newPos);
 
-    return true;
 }
 
 void PawnMoves(bool which_side, position * cur_pos, int PawnPos[2], move * Moves) {
@@ -148,8 +144,14 @@ void PawnMoves(bool which_side, position * cur_pos, int PawnPos[2], move * Moves
         poscap2 = cur_pos->WSide[x - 1][new_y];
     }
 
+    int NewPos[2] = {x, new_y};
+
     if (!cur_pos->GenBoard[x][new_y]) {
-        Moves[count].x = x; Moves[count].y = new_y; count++;
+        NewPos[0] = x; NewPos[1] = new_y;
+        bool CanIt = CanItPromote(which_side, cur_pos, NewPos, Moves, &count);
+        if (!CanIt) {
+            Moves[count].x = x; Moves[count].y = new_y; count++;
+        }
     }
 
     int new_y2 = new_y + fileIncrement;
@@ -158,10 +160,18 @@ void PawnMoves(bool which_side, position * cur_pos, int PawnPos[2], move * Moves
     }
 
     if (poscap1) {
-        Moves[count].x = x + 1; Moves[count].y = new_y; count++;
+        NewPos[0] = x + 1; NewPos[1] = new_y;
+        bool CanIt = CanItPromote(which_side, cur_pos, NewPos, Moves, &count);
+        if (!CanIt) {
+            Moves[count].x = x + 1; Moves[count].y = new_y; count++;
+        }
     }
     if (poscap2) {
-        Moves[count].x = x - 1; Moves[count].y = new_y; count++;
+        NewPos[0] = x - 1; NewPos[1] = new_y;
+        bool CanIt = CanItPromote(which_side, cur_pos, NewPos, Moves, &count);
+        if (!CanIt) {
+            Moves[count].x = x - 1; Moves[count].y = new_y; count++;
+        }
     }
     
     int rec_x = cur_pos->LastMove[0]; int rec_y = cur_pos->LastMove[1];
