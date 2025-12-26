@@ -41,8 +41,10 @@ float sum_material(int S_side[8][8], char Piecepositions[8][8]) {
 
 }
 
-float Evaluate(position * cur_pos) {
-    float wvalue, bvalue = 0;
+float EvaluateSpecificPosition(position * cur_pos) {
+    float wvalue = sum_material(cur_pos->WSide, cur_pos->PiecePositions);
+    float bvalue = sum_material(cur_pos->Bside, cur_pos->PiecePositions);
+    float material = wvalue - bvalue;
 
 
 }
