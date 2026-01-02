@@ -104,25 +104,23 @@ int GetAttack(int pos[2], Side Cur_side, Side Opp_side, int Increment[2], move *
 
 }
 
-void Create_Piece(char piece, bool which_side, position * cur_pos, int piecePos[2]) {
+void Create_Piece(char piece, Side * Cur_side, Side * Opp_side, int piecePos[2]) {
 
     int x = piecePos[0]; int y = piecePos[0];
-    cur_pos->PiecePositions[x][y] = piece;
-    cur_pos->GenBoard[x][y] = true;
-
-    if (which_side == black) {cur_pos->Bside[x][y] = true;}
-    else {cur_pos->WSide[x][y] = true;}
+    Cur_side->PieceTypes[x][y] = piece;
+    Opp_side->PieceTypes[x][y] = piece;
+    Cur_side->Pieces[x][y] = true;
+    Opp_side->Pieces[x][y] = false;
 
 }
 
-void Destroy_Piece(bool which_side, position * cur_pos, int piecePos[2]) {
+void Destroy_Piece(Side * Cur_side, Side * Opp_side, int piecePos[2]) {
 
     int x = piecePos[0]; int y = piecePos[0];
-    cur_pos->PiecePositions[x][y] = 'a';
-    cur_pos->GenBoard[x][y] = false;
-
-    if (which_side == black) {cur_pos->Bside[x][y] = false;}
-    else {cur_pos->WSide[x][y] = false;}
+    Cur_side->PieceTypes[x][y] = 'a';
+    Opp_side->PieceTypes[x][y] = 'a';
+    Cur_side->Pieces[x][y] = false;
+    Opp_side->Pieces[x][y] = false;
 
 }
 
@@ -189,7 +187,7 @@ void PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves, Pendu
     }
     
     int rec_x = MoveOrder.Last_move[0]; int rec_y = MoveOrder.Last_move[1];
-    if (rec_y == y && Opp_side.PieceTypes == 'p') {
+    if (rec_y == y && Opp_side.PieceTypes[rec_x][rec_y] == 'p') {
         Moves[count].x = rec_x; Moves[count].y = rec_y;
         count++;
     }
