@@ -40,6 +40,11 @@ typedef struct {
     bool HasKingMoved;
     bool HasAFrookMoved;
     bool HasHFrookMoved;
+    bool Which_side;
+    int Pawns[8][2];
+    int KingPos[2];
+    int backrank;
+    int direction;
 } Side;
 
 //README: Please treat "true" as 1 and "false" as 0
@@ -62,16 +67,7 @@ bool DoesSquareExist(int l, int f) {
     return false;
 }
 
-bool DoesSquareHaveEnemyPiece(position * cur_pos, int x, int y, bool which_side) {
-    
-    bool has_piece = cur_pos->WSide[x][y];
-    if (which_side == black) {has_piece = cur_pos->Bside[x][y];}
-
-    return has_piece;
-
-}
-
-int GetAttack(int pos[2], position * cur_pos, int Increment[2], move * Squares, int control, bool which_side) {
+int GetAttack(int pos[2], Side Cur_side, Side Opp_side, int Increment[2], move * Squares, int control) {
 
     int x = pos[0]; int y = pos[1];
     int buf_x = x; int buf_y = y;
@@ -80,9 +76,9 @@ int GetAttack(int pos[2], position * cur_pos, int Increment[2], move * Squares, 
     while (true) {
 
         buf_x += Increment[0]; buf_y += Increment[1];
-        bool enemy_piece = DoesSquareHaveEnemyPiece(cur_pos, buf_x, buf_y, which_side);
+        bool enemy_piece = Opp_side.Pieces[buf_x][buf_y];
 
-        if (!DoesSquareExist(buf_x, buf_y) || (cur_pos->GenBoard[buf_x][buf_y] && enemy_piece)) {break;}
+        if (!DoesSquareExist(buf_x, buf_y)) {break;}
 
         Squares[control_buf].x = buf_x; Squares[control_buf].y = buf_y;
         Squares[control_buf].promotion = 'a';
@@ -117,10 +113,9 @@ void Destroy_Piece(bool which_side, position * cur_pos, int piecePos[2]) {
 
 }
 
-bool CanItPromote(bool which_side, position * cur_pos, int NewPos[2], move * Moves, int *control) {
+bool CanItPromote(Side Cur_side, int NewPos[2], move * Moves, int *control) {
 
-    int en_backrank = 7;
-    if (which_side == black) {en_backrank = 0;}
+    int en_backrank = Cur_side.backrank;
 
     char Promotions[] = "QRBN";
 
@@ -136,27 +131,22 @@ bool CanItPromote(bool which_side, position * cur_pos, int NewPos[2], move * Mov
 
 }
 
-void PawnMoves(bool which_side, position * cur_pos, int PawnPos[2], move * Moves) {
+void PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves) {
     //Behold: if statements!
     int count = 0;
     int x = PawnPos[0]; int y = PawnPos[1];
-    int PawnWall = 1;
-    int fileIncrement = 1; if (which_side == black) {fileIncrement *= -1; PawnWall = 6;}
+    int fileIncrement = Cur_side.direction;
+    int PawnWall = Cur_side.backrank + fileIncrement;
     int new_y = y + fileIncrement;
 
-    int poscap1 = cur_pos->Bside[x + 1][new_y];
-    int poscap2 = cur_pos->Bside[x - 1][new_y];
-
-    if (which_side == black) {
-        poscap1 = cur_pos->WSide[x + 1][new_y];
-        poscap2 = cur_pos->WSide[x - 1][new_y];
-    }
+    int poscap1 = Opp_side.Pieces[x + 1][new_y];
+    int poscap2 = Opp_side.Pieces[x - 1][new_y];
 
     int NewPos[2] = {x, new_y};
 
-    if (!cur_pos->GenBoard[x][new_y]) {
+    if (!(Opp_side.Pieces[x][new_y] || Cur_side.Pieces[x][new_y])) {
         NewPos[0] = x; NewPos[1] = new_y;
-        bool CanIt = CanItPromote(which_side, cur_pos, NewPos, Moves, &count);
+        bool CanIt = CanItPromote(Cur_side, NewPos, Moves, &count);
         if (!CanIt) {
             Moves[count].x = x; Moves[count].y = new_y; count++;
         }
@@ -265,10 +255,10 @@ void KingMoves(bool which_side, position * cur_pos, int KingPos[2], move * Moves
 int BishopMoves(bool which_side, position * cur_pos, int BishopPos[2], move * Moves) {
 
     int control = 0;
-    int Increment[2] = {1,1}; control = GetAttack(BishopPos, cur_pos, Increment, Moves, control, which_side);
-    Increment[0] = -1; control = GetAttack(BishopPos, cur_pos, Increment, Moves, control, which_side);
-    Increment[1] = -1; control = GetAttack(BishopPos, cur_pos, Increment, Moves, control, which_side);
-    Increment[0] = 1; control = GetAttack(BishopPos, cur_pos, Increment, Moves, control, which_side);
+    int Increment[2] = {1,1}; control = GetAttack(BishopPos, cur_pos, Increment, Moves, control);
+    Increment[0] = -1; control = GetAttack(BishopPos, cur_pos, Increment, Moves, control);
+    Increment[1] = -1; control = GetAttack(BishopPos, cur_pos, Increment, Moves, control);
+    Increment[0] = 1; control = GetAttack(BishopPos, cur_pos, Increment, Moves, control);
 
     return control;
 
@@ -277,11 +267,11 @@ int BishopMoves(bool which_side, position * cur_pos, int BishopPos[2], move * Mo
 int RookMoves(bool which_side, position * cur_pos, int RookPos[2], move * Moves) {
 
     int control = 0;
-    int Increment[2] = {1,0}; control = GetAttack(RookPos, cur_pos, Increment, Moves, control, which_side);
-    Increment[0] = -1; control = GetAttack(RookPos, cur_pos, Increment, Moves, control, which_side);
+    int Increment[2] = {1,0}; control = GetAttack(RookPos, cur_pos, Increment, Moves, control);
+    Increment[0] = -1; control = GetAttack(RookPos, cur_pos, Increment, Moves, control);
     Increment[0] = 0;
-    Increment[1] = 1; control = GetAttack(RookPos, cur_pos, Increment, Moves, control, which_side);
-    Increment[1] = -1; control = GetAttack(RookPos, cur_pos, Increment, Moves, control, which_side);
+    Increment[1] = 1; control = GetAttack(RookPos, cur_pos, Increment, Moves, control);
+    Increment[1] = -1; control = GetAttack(RookPos, cur_pos, Increment, Moves, control);
 
     return control;
 
