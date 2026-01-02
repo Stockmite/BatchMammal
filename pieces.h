@@ -47,6 +47,12 @@ typedef struct {
     int direction;
 } Side;
 
+typedef struct {
+    int move;
+    bool turn;
+    int Last_move[2];
+} Pendulum;
+
 //README: Please treat "true" as 1 and "false" as 0
 
 void GetGeneralBoard(int * BlackSide[], int * WhiteSide[], int * GeneralBoard[]) {
@@ -65,6 +71,12 @@ bool DoesSquareExist(int l, int f) {
 
     if ((l>0 || l<7) || (f>7 || f<0)) {return true;}
     return false;
+}
+
+bool IsThereAPiece(Side Cur_side, Side Opp_side, int x, int y) {
+
+    return Opp_side.Pieces[x][y] || Cur_side.Pieces[x][y];
+
 }
 
 int GetAttack(int pos[2], Side Cur_side, Side Opp_side, int Increment[2], move * Squares, int control) {
@@ -124,14 +136,17 @@ bool CanItPromote(Side Cur_side, int NewPos[2], move * Moves, int *control) {
         for (int a = 0; a < 4; a++) {
             Moves[*control].x = NewPos[0]; Moves[*control].y = y;
             Moves[*control].promotion = Promotions[a];
-            control++;
+            *control++;
         }
+
+        return true;
     }
 
+    return false;
 
 }
 
-void PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves) {
+void PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves, Pendulum MoveOrder) {
     //Behold: if statements!
     int count = 0;
     int x = PawnPos[0]; int y = PawnPos[1];
@@ -153,33 +168,34 @@ void PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves) {
     }
 
     int new_y2 = new_y + fileIncrement;
-    if (y==PawnWall && !cur_pos->GenBoard[x][new_y2]) {
+    if (y==PawnWall && !IsThereAPiece(Cur_side, Opp_side, x, new_y2)) {
         Moves[count].x = x; Moves[count].y = new_y2; count++;
     }
 
     if (poscap1) {
         NewPos[0] = x + 1; NewPos[1] = new_y;
-        bool CanIt = CanItPromote(which_side, cur_pos, NewPos, Moves, &count);
+        bool CanIt = CanItPromote(Cur_side, NewPos, Moves, &count);
         if (!CanIt) {
             Moves[count].x = x + 1; Moves[count].y = new_y; count++;
         }
     }
     if (poscap2) {
         NewPos[0] = x - 1; NewPos[1] = new_y;
-        bool CanIt = CanItPromote(which_side, cur_pos, NewPos, Moves, &count);
+        bool CanIt = CanItPromote(Cur_side, NewPos, Moves, &count);
         if (!CanIt) {
             Moves[count].x = x - 1; Moves[count].y = new_y; count++;
         }
     }
     
-    int rec_x = cur_pos->LastMove[0]; int rec_y = cur_pos->LastMove[1];
-    if (rec_y == y && cur_pos->PiecePositions[rec_x][rec_y] == 'p') {
+    int rec_x = MoveOrder.Last_move[0]; int rec_y = MoveOrder.Last_move[1];
+    if (rec_y == y && Opp_side.PieceTypes == 'p') {
         Moves[count].x = rec_x; Moves[count].y = rec_y;
+        count++;
     }
 
 }
 
-void KnightMoves(bool which_side, position * cur_pos, int KnightPos[2], move * Moves) {
+void KnightMoves(Side Cur_side, Side Opp_side, int KnightPos[2], move * Moves) {
 
     int x = KnightPos[0]; int y = KnightPos[1];
 
@@ -189,15 +205,15 @@ void KnightMoves(bool which_side, position * cur_pos, int KnightPos[2], move * M
                 int x1 = x+a; int x2 = x+b;
                 int y1 = y+b; int y2 = y+a;
 
-                bool enemy_piece1 = DoesSquareHaveEnemyPiece(cur_pos, x1, y1, which_side);
-                bool enemy_piece2 = DoesSquareHaveEnemyPiece(cur_pos, x2, y2, which_side);
+                bool enemy_piece1 = Opp_side.Pieces[x1][y1];
+                bool enemy_piece2 = Opp_side.Pieces[x2][y2];
 
-                if (DoesSquareExist(x1, y1) && (!cur_pos->GenBoard[x1][y1] || enemy_piece1)) {
+                if (DoesSquareExist(x1, y1) && (!Cur_side.Pieces[x1][y1] || enemy_piece1)) {
                     
                     Moves[count].x = x1; Moves[count].y = y1;
                     count++;
                 }
-                if (DoesSquareExist(x2, y2) && (!cur_pos->GenBoard[x2][y2] || enemy_piece2)) {
+                if (DoesSquareExist(x2, y2) && (!Cur_side.Pieces[x2][y2] || enemy_piece2)) {
                     Moves[count].x = x2; Moves[count].y = y2;
                     count++;
                 }
