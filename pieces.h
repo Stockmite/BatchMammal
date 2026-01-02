@@ -34,6 +34,14 @@ typedef struct {
     char promotion;
 } move;
 
+typedef struct {
+    int Pieces[8][8];
+    char PieceTypes[8][8];
+    bool HasKingMoved;
+    bool HasAFrookMoved;
+    bool HasHFrookMoved;
+} Side;
+
 //README: Please treat "true" as 1 and "false" as 0
 
 void GetGeneralBoard(int * BlackSide[], int * WhiteSide[], int * GeneralBoard[]) {

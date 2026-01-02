@@ -46,5 +46,5 @@ float EvaluateSpecificPosition(position * cur_pos) {
     float bvalue = sum_material(cur_pos->Bside, cur_pos->PiecePositions);
     float material = wvalue - bvalue;
 
-
+    
 }
