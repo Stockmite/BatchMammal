@@ -10,12 +10,15 @@ char * Get_Pieces(Side Cur_side) {
     
     for (int x = 0; x < 8; x++) {
         for (int y = 0; y < 8; y++) {
-        
-            
-
+            if (Cur_side.Pieces[x][y]) {
+                AllPieces[count] = Cur_side.PieceTypes[x][y];
+                count++;
+            }
         }
     }
 
+    AllPieces[count] = '\0'; AllPieces = (char*)realloc(AllPieces, count + 1);
+    return AllPieces;
 
 }
 
