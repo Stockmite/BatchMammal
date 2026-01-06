@@ -3,6 +3,22 @@
 
 #include "pieces.h"
 
+char * Get_Pieces(Side Cur_side) {
+
+    char * AllPieces = (char*)malloc(sizeof(char) * 17);
+    int count = 0;
+    
+    for (int x = 0; x < 8; x++) {
+        for (int y = 0; y < 8; y++) {
+        
+            
+
+        }
+    }
+
+
+}
+
 float sum_material(int S_side[8][8], char Piecepositions[8][8]) {
     float sum = 0;
 
@@ -41,7 +57,11 @@ float sum_material(int S_side[8][8], char Piecepositions[8][8]) {
 
 }
 
+float KingSafety(Side Cur_side, Side Opp_side) {
 
+
+
+}
 
 float EvaluateSpecificPosition(Side WSide, Side BSide) {
     float wvalue = sum_material(WSide.Pieces, WSide.PieceTypes);
