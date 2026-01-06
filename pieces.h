@@ -47,7 +47,7 @@ bool IsThereAPiece(Side Cur_side, Side Opp_side, int x, int y) {
 
 bool DoesSquareExist(int l, int f) {
 
-    if ((l>0 || l<7) || (f>7 || f<0)) {return true;}
+    if ((l > -1 && l<8) && (f > -1 && f<8)) {return true;}
     return false;
 }
 
@@ -63,7 +63,7 @@ int GetAttack(int pos[2], Side Cur_side, Side Opp_side, int Increment[2], move *
         buf_x += Increment[0]; buf_y += Increment[1];
         bool enemy_piece = Opp_side.Pieces[buf_x][buf_y];
 
-        if (!DoesSquareExist(buf_x, buf_y)) {break;}
+        if (!DoesSquareExist(buf_x, buf_y) || Cur_side.Pieces[buf_x][buf_y]) {break;}
 
         Squares[control_buf].x = buf_x; Squares[control_buf].y = buf_y;
         Squares[control_buf].promotion = 'a';
@@ -243,15 +243,15 @@ int KingMoves(Side Cur_side, Side Opp_side, int KingPos[2], move * Moves) {
 
 }
 
-int BishopMoves(Side Cur_side, Side Opp_side, int BishopPos[2], move * Moves) {
+int BishopMoves(Side Cur_side, Side Opp_side, int BishopPos[2], move * Moves, bool Reallocate) {
 
     int control = 0;
-    int Increment[2] = {1,1}; control += GetAttack(BishopPos, Cur_side, Opp_side, Increment, Moves, control);
-    Increment[0] = -1; control += GetAttack(BishopPos, Cur_side, Opp_side, Increment, Moves, control);
-    Increment[1] = -1; control += GetAttack(BishopPos, Cur_side, Opp_side, Increment, Moves, control);
-    Increment[0] = 1; control += GetAttack(BishopPos, Cur_side, Opp_side, Increment, Moves, control);
+    int Increment[2] = {1,1}; control = GetAttack(BishopPos, Cur_side, Opp_side, Increment, Moves, control);
+    Increment[0] = -1; control = GetAttack(BishopPos, Cur_side, Opp_side, Increment, Moves, control);
+    Increment[1] = -1; control = GetAttack(BishopPos, Cur_side, Opp_side, Increment, Moves, control);
+    Increment[0] = 1; control = GetAttack(BishopPos, Cur_side, Opp_side, Increment, Moves, control);
 
-    if (control < 13) {
+    if (control < 13 && Reallocate) {
         Moves = realloc(Moves, sizeof(move) * control);
     }
 
@@ -259,20 +259,18 @@ int BishopMoves(Side Cur_side, Side Opp_side, int BishopPos[2], move * Moves) {
 
 }
 
-int RookMoves(Side Cur_side, Side Opp_side, int RookPos[2], move * Moves) {
+int RookMoves(Side Cur_side, Side Opp_side, int RookPos[2], move * Moves, bool Reallocate) {
 
     int control = 0;
-    int Increment[2] = {1,0}; control += GetAttack(RookPos, Cur_side, Opp_side, Increment, Moves, control);
-    Increment[0] = -1; control += GetAttack(RookPos, Cur_side, Opp_side, Increment, Moves, control);
+    int Increment[2] = {1,0}; control = GetAttack(RookPos, Cur_side, Opp_side, Increment, Moves, control);
+    Increment[0] = -1; control = GetAttack(RookPos, Cur_side, Opp_side, Increment, Moves, control);
     Increment[0] = 0;
-    Increment[1] = 1; control += GetAttack(RookPos, Cur_side, Opp_side, Increment, Moves, control);
-    Increment[1] = -1; control += GetAttack(RookPos, Cur_side, Opp_side, Increment, Moves, control);
+    Increment[1] = 1; control = GetAttack(RookPos, Cur_side, Opp_side, Increment, Moves, control);
+    Increment[1] = -1; control = GetAttack(RookPos, Cur_side, Opp_side, Increment, Moves, control);
 
-    if (control < 14) {
-        Moves = realloc(Moves, sizeof(move) * control);
-    }
-
-    return control;
+    if (control < 14 && Reallocate) {
+       Moves = realloc(Moves, sizeof(move) * control);
+    } 
 
     return control;
 
@@ -280,11 +278,13 @@ int RookMoves(Side Cur_side, Side Opp_side, int RookPos[2], move * Moves) {
 
 int QueenMoves(Side Cur_side, Side Opp_side, int QueenPos[2], move * Moves) {
 
-    int control = RookMoves(Cur_side, Opp_side, QueenPos, Moves);
-    control += BishopMoves(Cur_side, Opp_side, QueenPos, Moves+control);
+    int control = RookMoves(Cur_side, Opp_side, QueenPos, Moves, false);
+    control += BishopMoves(Cur_side, Opp_side, QueenPos, Moves+control, false);
 
     if (control < 20) {
         Moves = realloc(Moves, sizeof(move) * control);
     }
+
+    return control;
 
 }
