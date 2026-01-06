@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "pieces.h"
 
@@ -22,38 +23,34 @@ char * Get_Pieces(Side Cur_side) {
 
 }
 
-float sum_material(int S_side[8][8], char Piecepositions[8][8]) {
+float sum_material(char * PieceTypes) {
     float sum = 0;
 
-    for (int x = 0; x < 8; x++) {
-        for (int y = 0; y < 8; y++) {
-            if (S_side[x][y]) {
-                char piece = Piecepositions[x][y];
+    for (int x = 0; x < strlen(PieceTypes); x++) {
+        char piece = PieceTypes[x];
 
-                switch (piece) {
-                    case 'p':
-                        sum++;
-                        break;
-                    case 'K':
-                        sum += 200.0;
-                        break;
-                    case 'Q':
-                        sum += 9.0;
-                        break;
-                    case 'N':
-                        sum += 3.25;
-                        break;
-                    case 'B':
-                        sum += 3.5;
-                        break;
-                    case 'R':
-                        sum += 5;
-                        break;
-                    default:
-                        break;
-                }
+        switch (piece) {
+            case 'p':
+                sum++;
+                break;
+            case 'K':
+                sum += 200.0;
+            break;
+            case 'Q':
+                sum += 9.0;
+                break;
+            case 'N':
+                sum += 3.25;
+                break;
+            case 'B':
+                sum += 3.5;
+                break;
+            case 'R':
+                sum += 5;
+                break;
+            default:
+                break;
             }
-        }
     }
 
     return sum;
@@ -67,8 +64,11 @@ float KingSafety(Side Cur_side, Side Opp_side) {
 }
 
 float EvaluateSpecificPosition(Side WSide, Side BSide) {
-    float wvalue = sum_material(WSide.Pieces, WSide.PieceTypes);
-    float bvalue = sum_material(BSide.Pieces, BSide.PieceTypes);
+    char * Wpieces = Get_Pieces(WSide);
+    char * Bpieces = Get_Pieces(BSide);
+
+    float wvalue = sum_material(Wpieces);
+    float bvalue = sum_material(Bpieces);
     float material = wvalue - bvalue;
 
     
