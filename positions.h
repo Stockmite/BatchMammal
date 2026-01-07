@@ -60,10 +60,12 @@ float sum_material(char * PieceTypes) {
 
 float KingSafety(Side Cur_side, Side Opp_side, int KingPos[2], char* OppPieces) {
 
-    int x = KingPos[0]; int y = KingPos[1];
+    float safety = 0.0;
 
-    float lx = fabs((float)x - 3.5) + 0.5;
-    float ly = fabs((float)y - 3.5) + 0.5;
+    int kx = KingPos[0]; int ky = KingPos[1];
+
+    float lx = fabs((float)kx - 3.5) + 0.5;
+    float ly = fabs((float)ky - 3.5) + 0.5;
 
     float ChMaPower = 0.6;
     for (int ind = 0; ind < strlen(OppPieces); ind++) {
@@ -83,10 +85,23 @@ float KingSafety(Side Cur_side, Side Opp_side, int KingPos[2], char* OppPieces) 
         }
 
     }
+
+    for (int a = -1; a < 2; a++) {
+        for (int b = -1; b < 2; b++) {
+            int x = kx + a; int y = ky + b;
+            if (!DoesSquareExist(x, y)) {continue;}
+            if (!Cur_side.Pieces[x][y]) {
+                if (Cur_side.Pieces[kx + a][ky + b]) {safety += 0.05;}
+                safety -= 0.1;
+            }
+        }
+    }
     
     float xDebuff = lx * 0.1; int yDebuff = ly * 0.05;
 
-    return (xDebuff + yDebuff) * ChMaPower;
+    safety += (xDebuff + yDebuff) * ChMaPower;
+
+    return safety;
 
 }
 
@@ -111,6 +126,10 @@ float PawnStructure(Side Cur_side, Side Opp_side) {
         }
     }
 
+}
+
+float KnightActivity() {
+    
 }
 
 float EvaluateSpecificPosition(Side WSide, Side BSide) {
