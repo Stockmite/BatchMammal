@@ -62,8 +62,8 @@ float KingSafety(Side Cur_side, Side Opp_side, int KingPos[2], char* OppPieces) 
 
     int x = KingPos[0]; int y = KingPos[1];
 
-    int lx = fabs((float)x - 3.5) + 0.5;
-    int ly = fabs((float)y - 3.5) + 0.5;
+    float lx = fabs((float)x - 3.5) + 0.5;
+    float ly = fabs((float)y - 3.5) + 0.5;
 
     float ChMaPower = 0.6;
     for (int ind = 0; ind < strlen(OppPieces); ind++) {
@@ -84,9 +84,32 @@ float KingSafety(Side Cur_side, Side Opp_side, int KingPos[2], char* OppPieces) 
 
     }
     
-    int xDebuff = x * 0.1; int yDebuff = y * 0.05;
+    float xDebuff = lx * 0.1; int yDebuff = ly * 0.05;
 
     return (xDebuff + yDebuff) * ChMaPower;
+
+}
+
+float PawnStructure(Side Cur_side, Side Opp_side) {
+
+    float structure = 0.0;
+
+    bool OccupiedFiles[8] = {false};
+
+    for (int p = 0; p < 8; p++) {
+        int x = Cur_side.Pawns[p][0]; int y = Cur_side.Pawns[p][1];
+
+        if (OccupiedFiles[y]) {structure -= 0.1;}
+        else {OccupiedFiles[y] = true;}
+
+        int ny = y + 1; int prx = y - 1;
+        int next_f = (ny > -1 && ny < 8) ? OccupiedFiles[ny] : false;
+        int prev_f = (prx > -1 && prx < 8) ? OccupiedFiles[prx] : false;
+
+        if (OccupiedFiles[y] && !(next_f || prev_f)) {
+            structure -= 0.1;
+        }
+    }
 
 }
 
