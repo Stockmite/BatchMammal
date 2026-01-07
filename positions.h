@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "pieces.h"
 
@@ -57,8 +58,14 @@ float sum_material(char * PieceTypes) {
 
 }
 
-float KingSafety(Side Cur_side, Side Opp_side) {
+float KingSafety(Side Cur_side, Side Opp_side, int KingPos[2], char* OppPieces) {
 
+    float safety = 0;
+    int x = KingPos[0]; int y = KingPos[1];
+
+    int lx = fabs((float)x - 3.5) + 0.5;
+    int ly = fabs((float)y - 3.5) + 0.5;
+    
 
 
 }
