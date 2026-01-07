@@ -110,26 +110,38 @@ float PawnStructure(Side Cur_side, Side Opp_side) {
     float structure = 0.0;
 
     bool OccupiedFiles[8] = {false};
+    bool EOccupiedFiles[8] = {false};
 
     for (int p = 0; p < 8; p++) {
         int x = Cur_side.Pawns[p][0]; int y = Cur_side.Pawns[p][1];
+        int ex = Opp_side.Pawns[p][0];
 
-        if (OccupiedFiles[y]) {structure -= 0.1;}
-        else {OccupiedFiles[y] = true;}
+        if (OccupiedFiles[p]) {structure -= 0.1;}
+        if (x == p) {OccupiedFiles[p] = true;}
+        if (ex == p) {EOccupiedFiles[p] = true;}
 
-        int ny = y + 1; int prx = y - 1;
-        int next_f = (ny > -1 && ny < 8) ? OccupiedFiles[ny] : false;
+        int nx = p + 1; int prx = p - 1;
+        int next_f = (nx > -1 && nx < 8) ? OccupiedFiles[nx] : false;
         int prev_f = (prx > -1 && prx < 8) ? OccupiedFiles[prx] : false;
 
-        if (OccupiedFiles[y] && !(next_f || prev_f)) {
+        if (OccupiedFiles[x] && !(next_f || prev_f)) {
             structure -= 0.1;
+        }
+
+        int next_ef = (nx > -1 && nx < 8) ? EOccupiedFiles[ex + 1] : false;
+        int prev_ef = (prx > -1 && prx < 8) ? EOccupiedFiles[ex - 1] : false;
+
+        if (OccupiedFiles[p] && !(next_ef || prev_ef || EOccupiedFiles[p])) {
+            structure += 0.1;
         }
     }
 
 }
 
 float KnightActivity() {
-    
+
+
+
 }
 
 float EvaluateSpecificPosition(Side WSide, Side BSide) {
