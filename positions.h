@@ -60,13 +60,33 @@ float sum_material(char * PieceTypes) {
 
 float KingSafety(Side Cur_side, Side Opp_side, int KingPos[2], char* OppPieces) {
 
-    float safety = 0;
     int x = KingPos[0]; int y = KingPos[1];
 
     int lx = fabs((float)x - 3.5) + 0.5;
     int ly = fabs((float)y - 3.5) + 0.5;
-    
 
+    float ChMaPower = 0.6;
+    for (int ind = 0; ind < strlen(OppPieces); ind++) {
+        switch (OppPieces[ind]) {
+            case 'Q':
+                ChMaPower -= 0.3;
+                break;
+            case 'R':
+                ChMaPower -= 0.2;
+                break;
+            case 'N':
+                ChMaPower -= 0.1;
+                break;
+            case 'B':
+                ChMaPower -= 0.15;
+                break;
+        }
+
+    }
+    
+    int xDebuff = x * 0.1; int yDebuff = y * 0.05;
+
+    return (xDebuff + yDebuff) * ChMaPower;
 
 }
 
