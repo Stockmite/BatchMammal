@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include "pieces.h"
+#include "PositionalModules\pawnstructure.h"
 
 char * Get_Pieces(Side Cur_side) {
 
@@ -113,6 +114,7 @@ float PawnStructure(Side Cur_side, Side Opp_side) {
     bool EOccupiedFiles[8] = {false};
 
     for (int p = 0; p < 8; p++) {
+        //TODO: Fix this mess later
         int x = Cur_side.Pawns[p][0]; int y = Cur_side.Pawns[p][1];
         int ex = Opp_side.Pawns[p][0];
 
@@ -138,9 +140,9 @@ float PawnStructure(Side Cur_side, Side Opp_side) {
 
 }
 
-float KnightActivity() {
+float KnightActivity(Side Cur_side, Side Opp_side) {
 
-
+    
 
 }
 
