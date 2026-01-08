@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "PositionalModules\pawnstructure.h"
+
 #define black false
 #define white true
 
@@ -25,7 +27,8 @@ typedef struct {
     bool HasHFrookMoved;
     bool IsBackrankAttacked; //easier than checking each time
     bool Which_side;
-    int Pawns[8][2];
+    PawnNode BaseNodes[8];
+    PawnNode PawnNodes[8];
     int KingPos[2];
     int backrank;
     int direction;

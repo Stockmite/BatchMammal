@@ -7,7 +7,7 @@ struct Node {
 
 typedef struct Node PawnNode;
 
-PawnNode * GetPawn(int PawnPos[2], PawnNode BaseNodes[8], PawnNode ReguNodes[8]) {
+PawnNode * GetPawn(int PawnPos[2], PawnNode BaseNodes[8]) {
     int x = PawnPos[0]; int y = PawnPos[1];
 
     PawnNode * MainNode = &(BaseNodes[x]);
@@ -16,7 +16,7 @@ PawnNode * GetPawn(int PawnPos[2], PawnNode BaseNodes[8], PawnNode ReguNodes[8])
     return MainNode;
 }
 
-PawnNode * GetLongPawn(int x, PawnNode BaseNodes[8], PawnNode ReguNodes[8]) {
+PawnNode * GetLongPawn(int x, PawnNode BaseNodes[8]) {
 
     PawnNode * MainNode = &(BaseNodes[x]);
     while (MainNode->next != NULL) {MainNode = MainNode->next;}
@@ -28,19 +28,36 @@ bool DoesFHavePawns(int x, PawnNode BaseNodes[8]) {
     return (BaseNodes[x].next != NULL);
 }
 
-void MovePawn(int OgPos[2], int NewPos[2], PawnNode BaseNodes[8], PawnNode ReguNodes[8]) {
+void MovePawn(int OgPos[2], int NewPos[2], PawnNode BaseNodes[8]) {
     int nx = NewPos[0]; int ny = NewPos[1]; int x = OgPos[0];
 
-    PawnNode * CurPawn = GetPawn(OgPos, BaseNodes, ReguNodes);
+    PawnNode * CurPawn = GetPawn(OgPos, BaseNodes);
     if (nx == x) {CurPawn->y = ny;}
 
     PawnNode * LastPawn = CurPawn->prev;
-    PawnNode * NewPartner = GetLongPawn(nx, BaseNodes, ReguNodes);
+    PawnNode * NewPartner = GetLongPawn(nx, BaseNodes);
 
     LastPawn->next = CurPawn->next;
     NewPartner->next = CurPawn;
 
     CurPawn->y = ny;
     CurPawn->prev = NewPartner;
+
+}
+
+int HowManyPawnsInF(int x, PawnNode BaseNodes[8]) {
+
+    int amount = 0;
+    PawnNode * N = &(BaseNodes[x]);
+
+    while (N->next != NULL) {amount++; N = N->next;}
+    return amount;
+
+}
+
+void DestroyPawn(int PawnPos[2], PawnNode BaseNodes[8]) {
+    PawnNode * Pawn = GetPawn(PawnPos, BaseNodes);
+    Pawn->y = -1;
+    Pawn->prev = Pawn->next;
 
 }

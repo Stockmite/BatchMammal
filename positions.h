@@ -4,7 +4,6 @@
 #include <math.h>
 
 #include "pieces.h"
-#include "PositionalModules\pawnstructure.h"
 
 char * Get_Pieces(Side Cur_side) {
 
