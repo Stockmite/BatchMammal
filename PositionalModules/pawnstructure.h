@@ -25,6 +25,7 @@ PawnNode * GetLongPawn(int x, PawnNode BaseNodes[8]) {
 }
 
 bool DoesFHavePawns(int x, PawnNode BaseNodes[8]) {
+    if (x < 0 || x > 7) {return false;}
     return (BaseNodes[x].next != NULL);
 }
 

@@ -109,33 +109,20 @@ float PawnStructure(Side Cur_side, Side Opp_side) {
 
     float structure = 0.0;
 
-    bool OccupiedFiles[8] = {false};
-    bool EOccupiedFiles[8] = {false};
-
     for (int p = 0; p < 8; p++) {
-        //TODO: Fix this mess later
-        int x = Cur_side.Pawns[p][0]; int y = Cur_side.Pawns[p][1];
-        int ex = Opp_side.Pawns[p][0];
+        structure -= 0.1 * (float)HowManyPawnsInF(p, Cur_side.BaseNodes);
+        bool ep1 = DoesFHavePawns(p+1, Opp_side.BaseNodes);
+        bool ep2 = DoesFHavePawns(p-1, Opp_side.BaseNodes);
 
-        if (OccupiedFiles[p]) {structure -= 0.1;}
-        if (x == p) {OccupiedFiles[p] = true;}
-        if (ex == p) {EOccupiedFiles[p] = true;}
-
-        int nx = p + 1; int prx = p - 1;
-        int next_f = (nx > -1 && nx < 8) ? OccupiedFiles[nx] : false;
-        int prev_f = (prx > -1 && prx < 8) ? OccupiedFiles[prx] : false;
-
-        if (OccupiedFiles[x] && !(next_f || prev_f)) {
-            structure -= 0.1;
-        }
-
-        int next_ef = (nx > -1 && nx < 8) ? EOccupiedFiles[ex + 1] : false;
-        int prev_ef = (prx > -1 && prx < 8) ? EOccupiedFiles[ex - 1] : false;
-
-        if (OccupiedFiles[p] && !(next_ef || prev_ef || EOccupiedFiles[p])) {
+        if (DoesFHavePawns(p-1, Cur_side.BaseNodes) && DoesFHavePawns(p+1, Cur_side.BaseNodes)) {
             structure += 0.1;
         }
+        if (ep1 && ep2 && DoesFHavePawns(p, Opp_side.BaseNodes)) {
+            structure -= 0.1; //TODO: Fix this later
+        }
     }
+
+    return structure;
 
 }
 
