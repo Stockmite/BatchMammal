@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 struct Node {
     int y;
     struct Node *next;
@@ -20,6 +21,21 @@ PawnNode * GetLongPawn(int x, PawnNode BaseNodes[8]) {
 
     PawnNode * MainNode = &(BaseNodes[x]);
     while (MainNode->next != NULL) {MainNode = MainNode->next;}
+
+    return MainNode;
+}
+
+PawnNode * GetAPawn(int x, int s, PawnNode BaseNodes[8], bool which_dire) {
+
+
+    PawnNode * MainNode = &(BaseNodes[x]);
+
+    bool FoundAPawn = false;
+
+    while (!FoundAPawn) {
+        MainNode = MainNode->next;
+        FoundAPawn = (which_dire == 1) ? (x < s) : (x > s);
+    }
 
     return MainNode;
 }
