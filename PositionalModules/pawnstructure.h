@@ -25,7 +25,7 @@ PawnNode * GetLongPawn(int x, PawnNode BaseNodes[8]) {
     return MainNode;
 }
 
-PawnNode * GetAPawn(int x, int s, PawnNode BaseNodes[8], bool which_dire) {
+bool GetAPawn(int x, int s, PawnNode BaseNodes[8], bool which_dire) {
 
 
     PawnNode * MainNode = &(BaseNodes[x]);
@@ -34,10 +34,27 @@ PawnNode * GetAPawn(int x, int s, PawnNode BaseNodes[8], bool which_dire) {
 
     while (!FoundAPawn) {
         MainNode = MainNode->next;
+        if (MainNode == NULL) {return false;}
         FoundAPawn = (which_dire == 1) ? (x < s) : (x > s);
     }
 
-    return MainNode;
+    return true;
+}
+
+int GetFurthestPawn(int x, PawnNode BaseNodes[8], bool which_dire) {
+
+    PawnNode * MainNode = &(BaseNodes[x]);
+    PawnNode * Farther = &(BaseNodes[x]);
+
+    while (MainNode->next != NULL) {
+        MainNode = MainNode->next;
+        int conv_y = (which_dire == 1) ? MainNode->y : (7 - MainNode->y);
+        if (Farther->y < conv_y) {Farther = MainNode;}
+    }
+
+    return Farther->y;
+
+
 }
 
 bool DoesFHavePawns(int x, PawnNode BaseNodes[8]) {
@@ -75,6 +92,7 @@ int HowManyPawnsInF(int x, PawnNode BaseNodes[8]) {
 void DestroyPawn(int PawnPos[2], PawnNode BaseNodes[8]) {
     PawnNode * Pawn = GetPawn(PawnPos, BaseNodes);
     Pawn->y = -1;
-    Pawn->prev = Pawn->next;
+    (Pawn->prev)->next = Pawn->next;
+    (Pawn->next)->prev = Pawn->prev;
 
 }

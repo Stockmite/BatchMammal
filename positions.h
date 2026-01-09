@@ -111,8 +111,10 @@ float PawnStructure(Side Cur_side, Side Opp_side) {
 
     for (int p = 0; p < 8; p++) {
         structure -= 0.1 * (float)HowManyPawnsInF(p, Cur_side.BaseNodes);
-        bool ep1 = DoesFHavePawns(p+1, Opp_side.BaseNodes);
-        bool ep2 = DoesFHavePawns(p-1, Opp_side.BaseNodes);
+
+        int far_y = GetFurthestPawn(p, Cur_side.BaseNodes, Cur_side.direction);
+        bool ep1 = GetAPawn(p+1, far_y, Opp_side.BaseNodes, Opp_side.direction);
+        bool ep2 = GetAPawn(p-1, far_y, Opp_side.BaseNodes, Opp_side.direction);
 
         if (DoesFHavePawns(p-1, Cur_side.BaseNodes) && DoesFHavePawns(p+1, Cur_side.BaseNodes)) {
             structure += 0.1;
