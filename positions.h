@@ -115,11 +115,12 @@ float PawnStructure(Side Cur_side, Side Opp_side) {
         int far_y = GetFurthestPawn(p, Cur_side.BaseNodes, Cur_side.direction);
         bool ep1 = GetAPawn(p+1, far_y, Opp_side.BaseNodes, Opp_side.direction);
         bool ep2 = GetAPawn(p-1, far_y, Opp_side.BaseNodes, Opp_side.direction);
+        bool ep3 = GetAPawn(p, far_y, Opp_side.BaseNodes, Opp_side.direction);
 
         if (DoesFHavePawns(p-1, Cur_side.BaseNodes) && DoesFHavePawns(p+1, Cur_side.BaseNodes)) {
             structure += 0.1;
         }
-        if (ep1 && ep2 && DoesFHavePawns(p, Opp_side.BaseNodes)) {
+        if (ep1 && ep2 && ep3) {
             structure -= 0.1; //TODO: Fix this later
         }
     }
@@ -128,10 +129,20 @@ float PawnStructure(Side Cur_side, Side Opp_side) {
 
 }
 
-float KnightActivity(Side Cur_side, Side Opp_side) {
-
+float KnightActivity(int KnightPos[2], Side Cur_side, Side Opp_side) {
+    int x = KnightPos[0]; int y = KnightPos[1];
+    int dire = Cur_side.direction;
     
+    float activity = 0.0;
 
+    int conv_y = (Cur_side.direction == 1) ? y : 7 - y;
+    int conv_x = (int)(fabs(3.5 - x) + 0.5);
+    activity += ((float)(5 - x)/10) + (conv_y * 0.1);
+
+    activity += (float)GetAPawn(x + 1, y - dire, Cur_side.BaseNodes, Cur_side.direction) / 10;
+    activity += (float)GetAPawn(x - 1, y - dire, Cur_side.BaseNodes, Cur_side.direction) / 10;
+
+    return activity;
 }
 
 float EvaluateSpecificPosition(Side WSide, Side BSide) {
