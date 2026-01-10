@@ -188,10 +188,8 @@ float BishopActivity(int BishopPos[2], Side Cur_side, Side Opp_side) {
         while(Node1->next != NULL) {
             Node1 = Node1->next;
 
-            int PawnPos1[2] = {p, Node1->y + 1};
-            int PawnPos2[2] = {p, Node1->y - 1};
-
             int dx = p - bx; int dy = Node1->y - by;
+
             if (abs(dx) == abs(dy)) {
                 activity -= 0.1;
             }
@@ -199,10 +197,22 @@ float BishopActivity(int BishopPos[2], Side Cur_side, Side Opp_side) {
 
         while(Node2->next != NULL) {
             Node2 = Node2->next;
+
+            int PawnPos1[2] = {p, Node2->y + 1};
+            int PawnPos2[2] = {p, Node2->y - 1};
+            int PawnPos3[2] = {p, Node2->y};
+
+            bool p1 = GetPawnB(PawnPos1, Opp_side.BaseNodes);
+            bool p2 = GetPawnB(PawnPos2, Opp_side.BaseNodes);
+            bool p3 = GetPawnB(PawnPos3, Opp_side.BaseNodes);
+
             int dx = p - bx; int dy = Node1->y - by;
             if (abs(dx) == abs(dy)) {
                 activity -= 0.1;
             }
+
+            if (p3 && p1) {activity -= 0.1;}
+            if (p3 && p2) {activity -= 0.1;}
         }
     }
 
