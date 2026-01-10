@@ -263,6 +263,14 @@ float QueenActivity(int QueenPos[2], Side Cur_side, Side Opp_side) {
 
 }
 
+float PawnActivity(int PawnPos[2], Side Cur_side, Side Opp_side) {
+    int x = PawnPos[0]; int y = PawnPos[1];
+
+    float lx = fabs((float)x - 3.5) + 0.5;
+    float ly = fabs((float)y- 3.5) + 0.5;
+    return (1 - (1/lx)) + (1 - (1/ly));
+}
+
 float EvaluateSpecificPosition(Side WSide, Side BSide) {
     char * Wpieces = Get_Pieces(WSide);
     char * Bpieces = Get_Pieces(BSide);
