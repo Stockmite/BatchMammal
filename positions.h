@@ -220,6 +220,49 @@ float BishopActivity(int BishopPos[2], Side Cur_side, Side Opp_side) {
     
 }
 
+float QueenActivity(int QueenPos[2], Side Cur_side, Side Opp_side) {
+
+    int qx = QueenPos[0]; int qy = QueenPos[1];
+    float activity = 0.0;
+
+    for (int p = 0; p < 8; p++) {
+        PawnNode * Node1 = &(Cur_side.BaseNodes[p]);
+        PawnNode * Node2 = &(Opp_side.BaseNodes[p]);
+
+
+        while(Node1->next != NULL) {
+            Node1 = Node1->next;
+
+            int dx = p - qx; int dy = Node1->y - qy;
+
+            if (abs(dx) == abs(dy)) {
+                activity -= 0.1;
+            }
+
+            if (Node1->y == qy || p == qx) {
+                activity -= 0.1;
+            }
+        }
+
+        while(Node2->next != NULL) {
+            Node2 = Node2->next;
+
+            int dx = p - qx; int dy = Node2->y - qy;
+
+            if (abs(dx) == abs(dy)) {
+                activity -= 0.1;
+            }
+
+            if (Node2->y == qy || p == qx) {
+                activity -= 0.1;
+            }
+        }
+    }
+
+    return activity;
+
+}
+
 float EvaluateSpecificPosition(Side WSide, Side BSide) {
     char * Wpieces = Get_Pieces(WSide);
     char * Bpieces = Get_Pieces(BSide);
