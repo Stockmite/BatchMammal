@@ -272,12 +272,35 @@ float PawnActivity(int PawnPos[2], Side Cur_side, Side Opp_side) {
 }
 
 float EvaluateSpecificPosition(Side WSide, Side BSide) {
+    float s_evaluation = 0.0;
+
     char * Wpieces = Get_Pieces(WSide);
     char * Bpieces = Get_Pieces(BSide);
 
     float wvalue = sum_material(Wpieces);
     float bvalue = sum_material(Bpieces);
+
+    float wking_safety = KingSafety(WSide, BSide, WSide.KingPos, Bpieces);
+    float bking_safety = KingSafety(BSide, WSide, BSide.KingPos, Wpieces);
+
+    float wstructure = PawnStructure(WSide, BSide);
+    float bstructure = PawnStructure(BSide, WSide);
+
     float material = wvalue - bvalue;
+    float structure = wstructure - bstructure;
+    float king_safety = wking_safety - bking_safety;
+
+    float wactivity = 0.0;
+    float bactivity = 0.0;
+
+    float * act_ptr = &wactivity;
+
+    for (int x = 0; x < 8; x++) {
+        for (int y = 0; y < 8; y++) {
+            if (WSide.Pieces[x][y]) {act_ptr = &wactivity;}
+            if (BSide.Pieces[x][y]) {act_ptr = &bactivity;}
+        }
+    }
 
     
 }
