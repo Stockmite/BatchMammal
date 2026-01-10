@@ -172,9 +172,37 @@ float RookActivity(int RookPos[2], Side Cur_side, Side Opp_side) {
         }
     }
 
+    return activity;
+
 }
 
 float BishopActivity(int BishopPos[2], Side Cur_side, Side Opp_side) {
+
+    int bx = BishopPos[0]; int by = BishopPos[1];
+    float activity = 0.0;
+
+    for (int p = 0; p < 8; p++) {
+        PawnNode * Node1 = &(Cur_side.BaseNodes[p]);
+        PawnNode * Node2 = &(Opp_side.BaseNodes[p]);
+
+        while(Node1->next != NULL) {
+            Node1 = Node1->next;
+            int dx = p - bx; int dy = Node1->y - by;
+            if (abs(dx) == abs(dy)) {
+                activity -= 0.1;
+            }
+        }
+
+        while(Node2->next != NULL) {
+            Node2 = Node2->next;
+            int dx = p - bx; int dy = Node1->y - by;
+            if (abs(dx) == abs(dy)) {
+                activity -= 0.1;
+            }
+        }
+    }
+
+    return activity;
     
 }
 
