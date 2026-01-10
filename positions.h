@@ -272,7 +272,6 @@ float PawnActivity(int PawnPos[2], Side Cur_side, Side Opp_side) {
 }
 
 float EvaluateSpecificPosition(Side WSide, Side BSide) {
-    float s_evaluation = 0.0;
 
     char * Wpieces = Get_Pieces(WSide);
     char * Bpieces = Get_Pieces(BSide);
@@ -295,12 +294,42 @@ float EvaluateSpecificPosition(Side WSide, Side BSide) {
 
     float * act_ptr = &wactivity;
 
+    Side * Cur_side = &WSide;
+    Side * Opp_side = &BSide;
+
     for (int x = 0; x < 8; x++) {
         for (int y = 0; y < 8; y++) {
-            if (WSide.Pieces[x][y]) {act_ptr = &wactivity;}
-            if (BSide.Pieces[x][y]) {act_ptr = &bactivity;}
+            int Pos[2] = {x,y};
+
+            if (WSide.Pieces[x][y]) {
+                act_ptr = &wactivity;
+                Cur_side = &WSide;
+                Opp_side = &BSide;
+            }
+            else if (BSide.Pieces[x][y]) {
+                act_ptr = &bactivity;
+                Cur_side = &BSide;
+                Opp_side = &WSide;
+            }
+
+            switch (Cur_side->PieceTypes[x][y]) {
+                case 'p':
+                    *act_ptr += PawnActivity(Pos, *Cur_side, *Opp_side);
+                case 'Q':
+                    *act_ptr += QueenActivity(Pos, *Cur_side, *Opp_side);
+                case 'N':
+                    *act_ptr += KnightActivity(Pos, *Cur_side, *Opp_side);
+                case 'R':
+                    *act_ptr += RookActivity(Pos, *Cur_side, *Opp_side);
+                case 'B':
+                    *act_ptr += BishopActivity(Pos, *Cur_side, *Opp_side);
+            }
         }
     }
+
+    float activity = wactivity - bactivity;
+    
+    return activity + king_safety + structure + material;
 
     
 }
