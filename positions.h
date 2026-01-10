@@ -139,10 +139,23 @@ float KnightActivity(int KnightPos[2], Side Cur_side, Side Opp_side) {
     int conv_x = (int)(fabs(3.5 - x) + 0.5);
     activity += ((float)(5 - x)/10) + (conv_y * 0.1);
 
-    activity += (float)GetAPawn(x + 1, y - dire, Cur_side.BaseNodes, Cur_side.direction) / 10;
-    activity += (float)GetAPawn(x - 1, y - dire, Cur_side.BaseNodes, Cur_side.direction) / 10;
+    activity += (float)GetAPawn(x + 1, y, Cur_side.BaseNodes, Cur_side.direction) / 10.0;
+    activity += (float)GetAPawn(x - 1, y, Cur_side.BaseNodes, Cur_side.direction) / 10.0;
+
+    activity -= (float)GetAPawn(x + 1, y, Opp_side.BaseNodes, Opp_side.direction) / 5.0;
+    activity -= (float)GetAPawn(x - 1, y, Opp_side.BaseNodes, Opp_side.direction) / 5.0;
 
     return activity;
+}
+
+float RookActivity(int RookPos[2], Side Cur_side, Side Opp_side) {
+
+    
+
+}
+
+float BishopActivity(int BishopPos[2], Side Cur_side, Side Opp_side) {
+    
 }
 
 float EvaluateSpecificPosition(Side WSide, Side BSide) {
