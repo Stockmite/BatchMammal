@@ -150,7 +150,27 @@ float KnightActivity(int KnightPos[2], Side Cur_side, Side Opp_side) {
 
 float RookActivity(int RookPos[2], Side Cur_side, Side Opp_side) {
 
-    
+    int rx = RookPos[0]; int ry = RookPos[1];
+    float activity = 0.0;
+
+    for (int p = 0; p < 8; p++) {
+        PawnNode * Node1 = &(Cur_side.BaseNodes[p]);
+        PawnNode * Node2 = &(Opp_side.BaseNodes[p]);
+
+        while(Node1->next != NULL) {
+            Node1 = Node1->next;
+            if (Node1->y == ry || p == rx) {
+                activity -= 0.1;
+            }
+        }
+
+        while(Node2->next != NULL) {
+            Node2 = Node2->next;
+            if (Node2->y == ry || p == rx) {
+                activity -= 0.1;
+            }
+        }
+    }
 
 }
 
