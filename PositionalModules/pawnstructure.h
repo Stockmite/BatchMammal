@@ -11,10 +11,25 @@ typedef struct Node PawnNode;
 PawnNode * GetPawn(int PawnPos[2], PawnNode BaseNodes[8]) {
     int x = PawnPos[0]; int y = PawnPos[1];
 
+    if ((x > -1 && x<8) && (y > -1 && y<8)) {return true;}
+
     PawnNode * MainNode = &(BaseNodes[x]);
     while (MainNode->y != y) {MainNode = MainNode->next;}
 
     return MainNode;
+}
+
+bool GetPawnB(int PawnPos[2], PawnNode BaseNodes[8]) {
+    int x = PawnPos[0]; int y = PawnPos[1];
+
+    if (!((x > -1 && x<8) && (y > -1 && y<8))) {return false;}
+
+    PawnNode * MainNode = &(BaseNodes[x]);
+    while (MainNode->y != y) {MainNode = MainNode->next;}
+
+    if (MainNode->y != y) {return false;}
+
+    return true;
 }
 
 PawnNode * GetLongPawn(int x, PawnNode BaseNodes[8]) {

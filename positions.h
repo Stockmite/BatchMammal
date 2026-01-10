@@ -187,6 +187,10 @@ float BishopActivity(int BishopPos[2], Side Cur_side, Side Opp_side) {
 
         while(Node1->next != NULL) {
             Node1 = Node1->next;
+
+            int PawnPos1[2] = {p, Node1->y + 1};
+            int PawnPos2[2] = {p, Node1->y - 1};
+
             int dx = p - bx; int dy = Node1->y - by;
             if (abs(dx) == abs(dy)) {
                 activity -= 0.1;
