@@ -264,12 +264,14 @@ float QueenActivity(int QueenPos[2], Side Cur_side, Side Opp_side) {
 
 }
 
-float PawnActivity(int PawnPos[2], Side Cur_side, Side Opp_side) {
+float PawnActivity(int PawnPos[2]) {
     int x = PawnPos[0]; int y = PawnPos[1];
 
     float lx = fabs((float)x - 3.5) + 0.5;
     float ly = fabs((float)y- 3.5) + 0.5;
-    return (1 - (1/lx)) + (1 - (1/ly));
+    float b = (1.0 - (1.0/lx)) + (1.0 - (1.0/ly));
+    printf("%f %f %f\n", lx, ly, b);
+    return b;
 }
 
 float EvaluateSpecificPosition(Side WSide, Side BSide) {
@@ -315,25 +317,33 @@ float EvaluateSpecificPosition(Side WSide, Side BSide) {
 
             switch (Cur_side->PieceTypes[x][y]) {
                 case 'p':
-                    *act_ptr += PawnActivity(Pos, *Cur_side, *Opp_side);
+                    *act_ptr += PawnActivity(Pos);
+                    printf("%f %f %f\n", wactivity, bactivity, *act_ptr);
                     break;
                 case 'Q':
                     *act_ptr += QueenActivity(Pos, *Cur_side, *Opp_side);
+                    //printf("%f ", *act_ptr);
                     break;
                 case 'N':
                     *act_ptr += KnightActivity(Pos, *Cur_side, *Opp_side);
+                    //printf("%f ", *act_ptr);
                     break;
                 case 'R':
                     *act_ptr += RookActivity(Pos, *Cur_side, *Opp_side);
+                    //printf("%f ", *act_ptr);
                     break;
                 case 'B':
                     *act_ptr += BishopActivity(Pos, *Cur_side, *Opp_side);
+                    //printf("%f ", *act_ptr);
                     break;
                 default:
+                    //printf("0 ");
                     break;
             }
         }
+        //printf("\n");
     }
+    printf("wk: %f bk: %f\n", wking_safety, bking_safety);
 
     float activity = wactivity - bactivity;
     
