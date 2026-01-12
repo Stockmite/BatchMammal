@@ -316,14 +316,21 @@ float EvaluateSpecificPosition(Side WSide, Side BSide) {
             switch (Cur_side->PieceTypes[x][y]) {
                 case 'p':
                     *act_ptr += PawnActivity(Pos, *Cur_side, *Opp_side);
+                    break;
                 case 'Q':
                     *act_ptr += QueenActivity(Pos, *Cur_side, *Opp_side);
+                    break;
                 case 'N':
                     *act_ptr += KnightActivity(Pos, *Cur_side, *Opp_side);
+                    break;
                 case 'R':
                     *act_ptr += RookActivity(Pos, *Cur_side, *Opp_side);
+                    break;
                 case 'B':
                     *act_ptr += BishopActivity(Pos, *Cur_side, *Opp_side);
+                    break;
+                default:
+                    break;
             }
         }
     }
