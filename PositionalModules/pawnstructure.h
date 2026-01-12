@@ -14,7 +14,7 @@ PawnNode * GetPawn(int PawnPos[2], PawnNode BaseNodes[8]) {
     if (!((x > -1 && x<8) && (y > -1 && y<8))) {return NULL;}
 
     PawnNode * MainNode = &(BaseNodes[x]);
-    while (MainNode->y != y) {MainNode = MainNode->next;}
+    while (MainNode->y != y && MainNode->next != NULL) {MainNode = MainNode->next;}
 
     return MainNode;
 }
@@ -25,7 +25,7 @@ bool GetPawnB(int PawnPos[2], PawnNode BaseNodes[8]) {
     if (!((x > -1 && x<8) && (y > -1 && y<8))) {return false;}
 
     PawnNode * MainNode = &(BaseNodes[x]);
-    while (MainNode->y != y) {MainNode = MainNode->next;}
+    while (MainNode->y != y && MainNode->next != NULL) {MainNode = MainNode->next;}
 
     if (MainNode->y != y) {return false;}
 

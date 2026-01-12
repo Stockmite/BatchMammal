@@ -58,7 +58,7 @@ float sum_material(char * PieceTypes) {
 
 }
 
-float KingSafety(Side Cur_side, Side Opp_side, int KingPos[2], char* OppPieces) {
+float KingSafety(Side Cur_side, int KingPos[2], char* OppPieces) {
 
     float safety = 0.0;
 
@@ -280,8 +280,8 @@ float EvaluateSpecificPosition(Side WSide, Side BSide) {
     float wvalue = sum_material(Wpieces);
     float bvalue = sum_material(Bpieces);
 
-    float wking_safety = KingSafety(WSide, BSide, WSide.KingPos, Bpieces);
-    float bking_safety = KingSafety(BSide, WSide, BSide.KingPos, Wpieces);
+    float wking_safety = KingSafety(WSide, WSide.KingPos, Bpieces);
+    float bking_safety = KingSafety(BSide, BSide.KingPos, Wpieces);
 
     float wstructure = PawnStructure(WSide, BSide);
     float bstructure = PawnStructure(BSide, WSide);
