@@ -42,6 +42,10 @@ typedef struct {
 
 //README: Please treat "true" as 1 and "false" as 0
 
+bool GetSquareColor(int l, int f) {
+    return (l % 2) != (f % 2);
+}
+
 bool IsThereAPiece(Side Cur_side, Side Opp_side, int x, int y) {
 
     return Opp_side.Pieces[x][y] || Cur_side.Pieces[x][y];

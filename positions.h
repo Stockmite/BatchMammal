@@ -205,14 +205,15 @@ float BishopActivity(int BishopPos[2], Side Cur_side, Side Opp_side) {
             bool p1 = GetPawnB(PawnPos1, Opp_side.BaseNodes);
             bool p2 = GetPawnB(PawnPos2, Opp_side.BaseNodes);
             bool p3 = GetPawnB(PawnPos3, Opp_side.BaseNodes);
+            bool SColor = GetSquareColor(bx, by) == Node2->y;
 
             int dx = p - bx; int dy = Node1->y - by;
             if (abs(dx) == abs(dy)) {
                 activity -= 0.1;
             }
 
-            if (p3 && p1) {activity -= 0.1;}
-            if (p3 && p2) {activity -= 0.1;}
+            if (p3 && p1 && SColor) {activity -= 0.1;}
+            if (p3 && p2 && SColor) {activity -= 0.1;}
         }
     }
 
