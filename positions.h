@@ -5,6 +5,13 @@
 
 #include "pieces.h"
 
+float RoundFloatValue(float val) {
+
+    int buf_val = (int)(val * 100.0f);
+    return (float)buf_val / 100.0f;
+
+}
+
 char * Get_Pieces(Side Cur_side) {
 
     char * AllPieces = (char*)malloc(sizeof(char) * 17);
@@ -179,7 +186,7 @@ float RookActivity(int RookPos[2], Side Cur_side, Side Opp_side) {
 float BishopActivity(int BishopPos[2], Side Cur_side, Side Opp_side) {
 
     int bx = BishopPos[0]; int by = BishopPos[1];
-    float activity = 0.0;
+    float activity = 0.0f;
 
     for (int p = 0; p < 8; p++) {
         PawnNode * Node1 = &(Cur_side.BaseNodes[p]);
@@ -209,11 +216,11 @@ float BishopActivity(int BishopPos[2], Side Cur_side, Side Opp_side) {
 
             int dx = p - bx; int dy = Node1->y - by;
             if (abs(dx) == abs(dy)) {
-                activity -= 0.1;
+                activity -= 0.1f;
             }
 
-            if (p3 && p1 && SColor) {activity -= 0.1;}
-            if (p3 && p2 && SColor) {activity -= 0.1;}
+            if (p3 && p1 && SColor) {activity -= 0.1f;}
+            if (p3 && p2 && SColor) {activity -= 0.1f;}
         }
     }
 
@@ -224,7 +231,7 @@ float BishopActivity(int BishopPos[2], Side Cur_side, Side Opp_side) {
 float QueenActivity(int QueenPos[2], Side Cur_side, Side Opp_side) {
 
     int qx = QueenPos[0]; int qy = QueenPos[1];
-    float activity = 0.0;
+    float activity = 0.0f;
 
     for (int p = 0; p < 8; p++) {
         PawnNode * Node1 = &(Cur_side.BaseNodes[p]);
@@ -237,11 +244,11 @@ float QueenActivity(int QueenPos[2], Side Cur_side, Side Opp_side) {
             int dx = p - qx; int dy = Node1->y - qy;
 
             if (abs(dx) == abs(dy)) {
-                activity -= 0.1;
+                activity -= 0.1f;
             }
 
             if (Node1->y == qy || p == qx) {
-                activity -= 0.1;
+                activity -= 0.1f;
             }
         }
 
@@ -251,11 +258,11 @@ float QueenActivity(int QueenPos[2], Side Cur_side, Side Opp_side) {
             int dx = p - qx; int dy = Node2->y - qy;
 
             if (abs(dx) == abs(dy)) {
-                activity -= 0.1;
+                activity -= 0.1f;
             }
 
             if (Node2->y == qy || p == qx) {
-                activity -= 0.1;
+                activity -= 0.1f;
             }
         }
     }
@@ -267,11 +274,10 @@ float QueenActivity(int QueenPos[2], Side Cur_side, Side Opp_side) {
 float PawnActivity(int PawnPos[2]) {
     int x = PawnPos[0]; int y = PawnPos[1];
 
-    float lx = fabs((float)x - 3.5) + 0.5;
-    float ly = fabs((float)y- 3.5) + 0.5;
-    float b = (1.0 - (1.0/lx)) + (1.0 - (1.0/ly));
-    printf("%f %f %f\n", lx, ly, b);
-    return b;
+    float lx = fabs((float)x - 3.5f) + 0.5f;
+    float ly = fabs((float)y- 3.5f) + 0.5f;
+    float b = (1.0f - (1.0f/lx)) + (1.0f - (1.0f/ly));
+    return RoundFloatValue(b);
 }
 
 float EvaluateSpecificPosition(Side WSide, Side BSide) {
@@ -292,48 +298,52 @@ float EvaluateSpecificPosition(Side WSide, Side BSide) {
     float structure = wstructure - bstructure;
     float king_safety = wking_safety - bking_safety;
 
-    float wactivity = 0.0;
-    float bactivity = 0.0;
-
-    float * act_ptr = &wactivity;
+    float activity = 0.0f;
+    float dire = 1.0f;
 
     Side * Cur_side = &WSide;
     Side * Opp_side = &BSide;
+
+    activity = 0.0F;
 
     for (int x = 0; x < 8; x++) {
         for (int y = 0; y < 8; y++) {
             int Pos[2] = {x,y};
 
             if (WSide.Pieces[x][y]) {
-                act_ptr = &wactivity;
+                dire = 1.0f;
                 Cur_side = &WSide;
                 Opp_side = &BSide;
             }
             else if (BSide.Pieces[x][y]) {
-                act_ptr = &bactivity;
+                dire = -1.0f;
                 Cur_side = &BSide;
                 Opp_side = &WSide;
             }
 
             switch (Cur_side->PieceTypes[x][y]) {
                 case 'p':
-                    *act_ptr += PawnActivity(Pos);
-                    printf("%f %f %f\n", wactivity, bactivity, *act_ptr);
+                    activity += PawnActivity(Pos) * dire;
+                    printf("%f\n", activity);
                     break;
                 case 'Q':
-                    *act_ptr += QueenActivity(Pos, *Cur_side, *Opp_side);
+                    activity += QueenActivity(Pos, *Cur_side, *Opp_side) * dire;
+                    printf("%f\n", activity);
                     //printf("%f ", *act_ptr);
                     break;
                 case 'N':
-                    *act_ptr += KnightActivity(Pos, *Cur_side, *Opp_side);
+                    activity += KnightActivity(Pos, *Cur_side, *Opp_side) * dire;
+                    printf("%f\n", activity);
                     //printf("%f ", *act_ptr);
                     break;
                 case 'R':
-                    *act_ptr += RookActivity(Pos, *Cur_side, *Opp_side);
+                    activity += RookActivity(Pos, *Cur_side, *Opp_side) * dire;
+                    printf("%f\n", activity);
                     //printf("%f ", *act_ptr);
                     break;
                 case 'B':
-                    *act_ptr += BishopActivity(Pos, *Cur_side, *Opp_side);
+                    activity += BishopActivity(Pos, *Cur_side, *Opp_side) * dire;
+                    printf("%f\n", activity);
                     //printf("%f ", *act_ptr);
                     break;
                 default:
@@ -344,8 +354,6 @@ float EvaluateSpecificPosition(Side WSide, Side BSide) {
         //printf("\n");
     }
     printf("wk: %f bk: %f\n", wking_safety, bking_safety);
-
-    float activity = wactivity - bactivity;
     
     return activity + king_safety + structure + material;
 
