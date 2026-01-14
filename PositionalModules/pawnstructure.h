@@ -40,8 +40,8 @@ PawnNode * GetLongPawn(int x, PawnNode BaseNodes[8]) {
     return MainNode;
 }
 
-bool GetAPawn(int x, int s, PawnNode BaseNodes[8], bool which_dire) {
-
+bool GetAPawn(int x, int s, PawnNode BaseNodes[8], int which_dire) {
+    if (!((x > -1 && x<8) && (s > -1 && s<8))) {return false;}
 
     PawnNode * MainNode = &(BaseNodes[x]);
 
@@ -50,7 +50,7 @@ bool GetAPawn(int x, int s, PawnNode BaseNodes[8], bool which_dire) {
     while (!FoundAPawn) {
         MainNode = MainNode->next;
         if (MainNode == NULL) {return false;}
-        FoundAPawn = (which_dire == 1) ? (x < s) : (x > s);
+        FoundAPawn = (which_dire == 1) ? (MainNode->y < s) : (MainNode->y > s);
     }
 
     return true;

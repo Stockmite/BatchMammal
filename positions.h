@@ -140,17 +140,17 @@ float KnightActivity(int KnightPos[2], Side Cur_side, Side Opp_side) {
     int x = KnightPos[0]; int y = KnightPos[1];
     int dire = Cur_side.direction;
     
-    float activity = 0.0;
+    float activity = 0.0f;
 
     int conv_y = (Cur_side.direction == 1) ? y : 7 - y;
-    int conv_x = (int)(fabs(3.5 - x) + 0.5);
-    activity += ((float)(5 - x)/10) + (conv_y * 0.1);
+    int conv_x = (int)(fabs(3.5f - x) + 0.5f);
+    activity += ((float)(5 - x)/10.0f) + (conv_y * 0.1f);
 
-    activity += (float)GetAPawn(x + 1, y, Cur_side.BaseNodes, Cur_side.direction) / 10.0;
-    activity += (float)GetAPawn(x - 1, y, Cur_side.BaseNodes, Cur_side.direction) / 10.0;
+    activity += (float)GetAPawn(x + 1, y, Cur_side.BaseNodes, Cur_side.direction) / 10.0f;
+    activity += (float)GetAPawn(x - 1, y, Cur_side.BaseNodes, Cur_side.direction) / 10.0f;
 
-    activity -= (float)GetAPawn(x + 1, y, Opp_side.BaseNodes, Opp_side.direction) / 5.0;
-    activity -= (float)GetAPawn(x - 1, y, Opp_side.BaseNodes, Opp_side.direction) / 5.0;
+    activity -= (float)GetAPawn(x + 1, y, Opp_side.BaseNodes, Opp_side.direction) / 5.0f;
+    activity -= (float)GetAPawn(x - 1, y, Opp_side.BaseNodes, Opp_side.direction) / 5.0f;
 
     return activity;
 }
@@ -324,26 +324,21 @@ float EvaluateSpecificPosition(Side WSide, Side BSide) {
             switch (Cur_side->PieceTypes[x][y]) {
                 case 'p':
                     activity += PawnActivity(Pos) * dire;
-                    printf("%f\n", activity);
                     break;
                 case 'Q':
                     activity += QueenActivity(Pos, *Cur_side, *Opp_side) * dire;
-                    printf("%f\n", activity);
                     //printf("%f ", *act_ptr);
                     break;
                 case 'N':
                     activity += KnightActivity(Pos, *Cur_side, *Opp_side) * dire;
-                    printf("%f\n", activity);
                     //printf("%f ", *act_ptr);
                     break;
                 case 'R':
                     activity += RookActivity(Pos, *Cur_side, *Opp_side) * dire;
-                    printf("%f\n", activity);
                     //printf("%f ", *act_ptr);
                     break;
                 case 'B':
                     activity += BishopActivity(Pos, *Cur_side, *Opp_side) * dire;
-                    printf("%f\n", activity);
                     //printf("%f ", *act_ptr);
                     break;
                 default:
