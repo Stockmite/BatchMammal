@@ -327,28 +327,21 @@ float EvaluateSpecificPosition(Side WSide, Side BSide) {
                     break;
                 case 'Q':
                     activity += QueenActivity(Pos, *Cur_side, *Opp_side) * dire;
-                    //printf("%f ", *act_ptr);
                     break;
                 case 'N':
                     activity += KnightActivity(Pos, *Cur_side, *Opp_side) * dire;
-                    //printf("%f ", *act_ptr);
                     break;
                 case 'R':
                     activity += RookActivity(Pos, *Cur_side, *Opp_side) * dire;
-                    //printf("%f ", *act_ptr);
                     break;
                 case 'B':
                     activity += BishopActivity(Pos, *Cur_side, *Opp_side) * dire;
-                    //printf("%f ", *act_ptr);
                     break;
                 default:
-                    //printf("0 ");
                     break;
             }
         }
-        //printf("\n");
     }
-    printf("wk: %f bk: %f\n", wking_safety, bking_safety);
     
     return activity + king_safety + structure + material;
 
