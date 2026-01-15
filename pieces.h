@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <math.h>
 
 #include "PositionalModules\pawnstructure.h"
 
@@ -297,16 +298,17 @@ int QueenMoves(Side Cur_side, Side Opp_side, int QueenPos[2], move * Moves) {
 }
 
 int GetFirstRook(int dire, Side Cur_side) {
+    int br = Cur_side.backrank;
 
-    for (int x = 0; x < 8; x++) {
-        
+    for (int x = 4-(4*dire); x < 4+(4*dire); x=x+dire) {
+        if (Cur_side.PieceTypes[x][br] == "R") {return x;}
     }
+
+    return -1;
 
 }
 
-void MovePiece(int ox, int oy, move Move, Side * Cur_side, Side * Opp_side, char piece) {
-    
-    int nx = Move.x; int ny = Move.y;
+void MovePiece(int ox, int oy, int nx, int ny, Side * Cur_side, Side * Opp_side, char piece) {
 
     Cur_side->Pieces[nx][ny] = true;
     Cur_side->Pieces[ox][oy] = false;
@@ -323,16 +325,35 @@ void MakeAMove(move Move, int OgPos[2], Side * Cur_side, Side * Opp_side, char p
     int ox = OgPos[0]; int oy = OgPos[1];
     int nx = Move.x; int ny = Move.y;
 
+    int NewPos[2] = {Move.x, Move.y};
+
     switch (piece) {
         case 'K':
             if (Move.promotion = 'K') { //i.e: if the king castled
-                switch(ny) {
-                    
+
+                int increment = 1;
+                switch(nx) {
+                    case 6:
+                        increment = 1;
+                        break;
+                    case 3:
+                        increment = -1;
+                        break;
                 }
+
+                int rx = GetFirstRook(increment, *Cur_side);
+                MovePiece(ox, oy, nx, ny, Cur_side, Opp_side, piece);
+                MovePiece(rx, Cur_side->backrank, nx + increment, ny, Cur_side, Opp_side, 'R');
+            } else {MovePiece(ox, oy, nx, ny, Cur_side, Opp_side, piece);}
+
+            break;
+        case 'p':
+            if (abs(nx - ox) == abs(ny - oy) && Opp_side->PieceTypes[nx][ny] == 'a') {
+
             }
             break;
         default:
-            MovePiece(ox, oy, Move, Cur_side, Opp_side, piece);
+            MovePiece(ox, oy, nx, ny, Cur_side, Opp_side, piece);
             break;
 
     }
