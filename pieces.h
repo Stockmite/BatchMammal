@@ -295,3 +295,23 @@ int QueenMoves(Side Cur_side, Side Opp_side, int QueenPos[2], move * Moves) {
     return control;
 
 }
+
+void MovePiece(int OgPos[2], int NewPos[2], Side * Cur_side, Side * Opp_side, char piece) {
+    
+    int ox = OgPos[0]; int oy = OgPos[1];
+    int nx = NewPos[0]; int ny = NewPos[1];
+
+    Cur_side->Pieces[nx][ny] = true;
+    Cur_side->Pieces[ox][oy] = false;
+    Opp_side->Pieces[nx][ny] = false;
+
+    Cur_side->PieceTypes[ox][oy] = 'a';
+    Opp_side->PieceTypes[ox][oy] = 'a';
+    Cur_side->PieceTypes[nx][ny] = piece;
+    Opp_side->PieceTypes[nx][ny] = piece;
+
+}
+
+void MakeAMove(Side * Cur_side, Side * Opp_side) {
+
+}
