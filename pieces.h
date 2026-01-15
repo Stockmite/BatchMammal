@@ -308,26 +308,23 @@ int GetFirstRook(int dire, Side Cur_side) {
 
 }
 
-void MovePiece(int ox, int oy, int nx, int ny, Side * Cur_side, Side * Opp_side, char piece) {
+void MovePiece(int OgPos[2], int NewPos[2], Side * Cur_side, Side * Opp_side, char piece) {
 
-    Cur_side->Pieces[nx][ny] = true;
-    Cur_side->Pieces[ox][oy] = false;
-    Opp_side->Pieces[nx][ny] = false;
+    int ox = OgPos[0]; int oy = OgPos[1];
+    int nx = NewPos[0]; int ny = NewPos[0];
 
-    Cur_side->PieceTypes[ox][oy] = 'a';
-    Opp_side->PieceTypes[ox][oy] = 'a';
-    Cur_side->PieceTypes[nx][ny] = piece;
-    Opp_side->PieceTypes[nx][ny] = piece;
-
+    Destroy_Piece(Cur_side, Opp_side, OgPos);
+    Create_Piece(piece, Cur_side, Opp_side, NewPos);
 }
 
 void MakeAMove(move Move, int OgPos[2], Side * Cur_side, Side * Opp_side, char piece) {
     int ox = OgPos[0]; int oy = OgPos[1];
+    int NewPos[2] = {Move.x, Move.y};
+    int OgOtherPiece[2];
     int nx = Move.x; int ny = Move.y;
 
-    int NewPos[2] = {Move.x, Move.y};
-
     switch (piece) {
+        //There's probably a smarter way to do what I'm doing, but this'll work for now
         case 'K':
             if (Move.promotion = 'K') { //i.e: if the king castled
 
@@ -341,19 +338,34 @@ void MakeAMove(move Move, int OgPos[2], Side * Cur_side, Side * Opp_side, char p
                         break;
                 }
 
+                NewPos[0] = nx+increment;
+
+                MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);
+
                 int rx = GetFirstRook(increment, *Cur_side);
-                MovePiece(ox, oy, nx, ny, Cur_side, Opp_side, piece);
-                MovePiece(rx, Cur_side->backrank, nx + increment, ny, Cur_side, Opp_side, 'R');
-            } else {MovePiece(ox, oy, nx, ny, Cur_side, Opp_side, piece);}
+                OgOtherPiece[0] = rx; OgOtherPiece[1] = Cur_side->backrank;
+                NewPos[0] = nx+increment;
+                MovePiece(OgPos, NewPos, Cur_side, Opp_side, 'R');
+            } else {MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);}
 
             break;
         case 'p':
+            OgOtherPiece[0] = nx; OgOtherPiece[1] = ny;
+
             if (abs(nx - ox) == abs(ny - oy) && Opp_side->PieceTypes[nx][ny] == 'a') {
 
+                OgOtherPiece[1] = oy;
+
+                MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);
+                Destroy_Piece(Opp_side, Cur_side, OgOtherPiece);
+                
+            } else if (ny == Opp_side->backrank) {
+                Destroy_Piece(Cur_side, Opp_side, OgPos);
+                Create_Piece(Move.promotion, Cur_side, Opp_side, NewPos);
             }
             break;
         default:
-            MovePiece(ox, oy, nx, ny, Cur_side, Opp_side, piece);
+            MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);
             break;
 
     }
