@@ -296,10 +296,17 @@ int QueenMoves(Side Cur_side, Side Opp_side, int QueenPos[2], move * Moves) {
 
 }
 
-void MovePiece(int OgPos[2], int NewPos[2], Side * Cur_side, Side * Opp_side, char piece) {
+int GetFirstRook(int dire, Side Cur_side) {
+
+    for (int x = 0; x < 8; x++) {
+        
+    }
+
+}
+
+void MovePiece(int ox, int oy, move Move, Side * Cur_side, Side * Opp_side, char piece) {
     
-    int ox = OgPos[0]; int oy = OgPos[1];
-    int nx = NewPos[0]; int ny = NewPos[1];
+    int nx = Move.x; int ny = Move.y;
 
     Cur_side->Pieces[nx][ny] = true;
     Cur_side->Pieces[ox][oy] = false;
@@ -312,6 +319,22 @@ void MovePiece(int OgPos[2], int NewPos[2], Side * Cur_side, Side * Opp_side, ch
 
 }
 
-void MakeAMove(Side * Cur_side, Side * Opp_side) {
+void MakeAMove(move Move, int OgPos[2], Side * Cur_side, Side * Opp_side, char piece) {
+    int ox = OgPos[0]; int oy = OgPos[1];
+    int nx = Move.x; int ny = Move.y;
+
+    switch (piece) {
+        case 'K':
+            if (Move.promotion = 'K') { //i.e: if the king castled
+                switch(ny) {
+                    
+                }
+            }
+            break;
+        default:
+            MovePiece(ox, oy, Move, Cur_side, Opp_side, piece);
+            break;
+
+    }
 
 }
