@@ -84,6 +84,7 @@ void RegisterMove(int x, int y, int PiecePos[2], move * Buff, int * ind, Side * 
 
     Buff[dind].x = x; Buff[dind].y = y;
     Buff[dind].ox = ox; Buff[dind].oy = oy;
+    Buff[dind].promotion = 'a';
     *ind++;
 
 }
@@ -101,9 +102,7 @@ int GetAttack(int pos[2], Side Cur_side, Side Opp_side, int Increment[2], move *
 
         if (!DoesSquareExist(buf_x, buf_y) || Cur_side.Pieces[buf_x][buf_y]) {break;}
 
-        Squares[control_buf].x = buf_x; Squares[control_buf].y = buf_y;
-        Squares[control_buf].promotion = 'a';
-        control_buf++;
+        RegisterMove(buf_x, buf_y, pos, Squares, &control_buf, &Opp_side, 'a');
         if (enemy_piece) {break;}
 
     }
@@ -132,27 +131,6 @@ void Destroy_Piece(Side * Cur_side, Side * Opp_side, int piecePos[2]) {
 
 }
 
-bool CanItPromote(Side Opp_side, int NewPos[2], move * Moves, int *control) {
-
-    int en_backrank = Opp_side.backrank;
-
-    char Promotions[] = "QRBN";
-
-    int y = NewPos[1];
-    if (y == en_backrank) {
-        for (int a = 0; a < 4; a++) {
-            Moves[*control].x = NewPos[0]; Moves[*control].y = y;
-            Moves[*control].promotion = Promotions[a];
-            *control = *control + 1;
-        }
-
-        return true;
-    }
-
-    return false;
-
-}
-
 int PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves, Pendulum MoveOrder) {
     //Behold: if statements!
     int count = 0;
@@ -167,37 +145,24 @@ int PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves, Pendul
     int NewPos[2] = {x, new_y};
 
     if (!(Opp_side.Pieces[x][new_y] || Cur_side.Pieces[x][new_y])) {
-        NewPos[0] = x; NewPos[1] = new_y;
-        bool CanIt = CanItPromote(Opp_side, NewPos, Moves, &count);
-        if (!CanIt) {
-            Moves[count].x = x; Moves[count].y = new_y; count++;
-        }
+        RegisterMove(x, new_y, PawnPos, Moves, &count, &Opp_side, 'p');
     }
 
     int new_y2 = new_y + fileIncrement;
     if (y==PawnWall && !IsThereAPiece(Cur_side, Opp_side, x, new_y2)) {
-        Moves[count].x = x; Moves[count].y = new_y2; count++;
+        RegisterMove(x, new_y2, PawnPos, Moves, &count, &Opp_side, 'p');
     }
 
     if (poscap1) {
-        NewPos[0] = x + 1; NewPos[1] = new_y;
-        bool CanIt = CanItPromote(Opp_side, NewPos, Moves, &count);
-        if (!CanIt) {
-            Moves[count].x = x + 1; Moves[count].y = new_y; count++;
-        }
+        RegisterMove(x + 1, new_y, PawnPos, Moves, &count, &Opp_side, 'p');
     }
     if (poscap2) {
-        NewPos[0] = x - 1; NewPos[1] = new_y;
-        bool CanIt = CanItPromote(Opp_side, NewPos, Moves, &count);
-        if (!CanIt) {
-            Moves[count].x = x - 1; Moves[count].y = new_y; count++;
-        }
+        RegisterMove(x - 1, new_y, PawnPos, Moves, &count, &Opp_side, 'p');
     }
     
     int rec_x = MoveOrder.Last_move[0]; int rec_y = MoveOrder.Last_move[1];
     if (rec_y == y && Opp_side.PieceTypes[rec_x][rec_y] == 'p') {
-        Moves[count].x = rec_x; Moves[count].y = rec_y;
-        count++;
+        RegisterMove(rec_x, rec_y, PawnPos, Moves, &count, &Opp_side, 'p');
     }
 
     if (count < 12) {
@@ -222,13 +187,10 @@ int KnightMoves(Side Cur_side, Side Opp_side, int KnightPos[2], move * Moves) {
                 bool enemy_piece2 = Opp_side.Pieces[x2][y2];
 
                 if (DoesSquareExist(x1, y1) && (!Cur_side.Pieces[x1][y1] || enemy_piece1)) {
-                    
-                    Moves[count].x = x1; Moves[count].y = y1;
-                    count++;
+                    RegisterMove(x1, y1, KnightPos, Moves, &count, &Opp_side, 'N');
                 }
                 if (DoesSquareExist(x2, y2) && (!Cur_side.Pieces[x2][y2] || enemy_piece2)) {
-                    Moves[count].x = x2; Moves[count].y = y2;
-                    count++;
+                    RegisterMove(x2, y2, KnightPos, Moves, &count, &Opp_side, 'N');
                 }
             }
         }
@@ -255,19 +217,17 @@ int KingMoves(Side Cur_side, Side Opp_side, int KingPos[2], move * Moves) {
             if ((new_x== x && new_y == y) || !does_square_exist) {continue;}
             if (!does_square_have_enemy_piece && IsThereAPiece(Cur_side, Opp_side, new_x, new_y)) {continue;}
 
-            Moves[count].x = new_x; Moves[count].y = new_y;
-            count++;
+            RegisterMove(new_x, new_y, KingMoves, Moves, &count, &Opp_side, 'K');
         }
     }
 
     if (!(Cur_side.HasKingMoved && Cur_side.IsBackrankAttacked)) {
         if (!Cur_side.HasAFrookMoved) {
-            count++;
-            Moves[count].x = 3;Moves[count].y = Cur_side.backrank;
+            RegisterMove(3, Cur_side.backrank, KingMoves, Moves, &count, &Opp_side, 'K');
+            Moves[count - 1].promotion = 'K';  //slight alteration to make it clear this is about castling
         }
         if (!Cur_side.HasHFrookMoved) {
-            count++;
-            Moves[count].x = 6;Moves[count].y = Cur_side.backrank;
+            RegisterMove(6, Cur_side.backrank, KingMoves, Moves, &count, &Opp_side, 'K');
         }
     }
 
