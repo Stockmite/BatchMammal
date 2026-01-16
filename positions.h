@@ -5,6 +5,8 @@
 
 #include "pieces.h"
 
+#define depth 5
+
 float RoundFloatValue(float val) {
 
     int buf_val = (int)(val * 100.0f);
@@ -346,4 +348,10 @@ float EvaluateSpecificPosition(Side WSide, Side BSide) {
     return activity + king_safety + structure + material;
 
     
+}
+
+float Evaluate(Side WSide, Side BSide, move * BestMove, Pendulum * order) {
+
+    
+
 }

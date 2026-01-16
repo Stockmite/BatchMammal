@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <math.h>
+#include <string.h>
 
 #include "PositionalModules\pawnstructure.h"
 
@@ -17,6 +18,7 @@
 typedef struct {
     int x;
     int y;
+    int ox; int oy;
     char promotion;
 } move;
 
@@ -59,6 +61,32 @@ bool DoesSquareExist(int l, int f) {
     return false;
 }
 
+void RegisterMove(int x, int y, int PiecePos[2], move * Buff, int * ind, Side * Opp_side, char piece) {
+
+    int ox = PiecePos[0]; int oy = PiecePos[1];
+
+    int dind = *ind;
+    
+    if (y == Opp_side->backrank) {
+        Opp_side->IsBackrankAttacked = true;
+
+        if (piece=='p') {
+            char Promotions[] = "QRBN";
+            for (int a = 0; a < strlen(Promotions); a++) {
+                Buff[dind+a].x = x; Buff[dind+a].y = y;
+                Buff[dind+a].ox = ox; Buff[dind+a].oy = oy; 
+                Buff[dind+a].promotion = Promotions[a];
+                *ind++;
+            }
+            return;
+        }
+    }
+
+    Buff[dind].x = x; Buff[dind].y = y;
+    Buff[dind].ox = ox; Buff[dind].oy = oy;
+    *ind++;
+
+}
 
 int GetAttack(int pos[2], Side Cur_side, Side Opp_side, int Increment[2], move * Squares, int control) {
 
@@ -301,7 +329,7 @@ int GetFirstRook(int dire, Side Cur_side) {
     int br = Cur_side.backrank;
 
     for (int x = 4-(4*dire); x < 4+(4*dire); x=x+dire) {
-        if (Cur_side.PieceTypes[x][br] == "R") {return x;}
+        if (Cur_side.PieceTypes[x][br] == 'R') {return x;}
     }
 
     return -1;
