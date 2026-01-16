@@ -37,7 +37,7 @@ typedef struct {
     int direction;
 } Side;
 
-typedef struct {
+typedef struct { //Might use this later
     int move;
     bool turn;
     int Last_move[2];
@@ -131,7 +131,7 @@ void Destroy_Piece(Side * Cur_side, Side * Opp_side, int piecePos[2]) {
 
 }
 
-int PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves, Pendulum MoveOrder) {
+int PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves, move LastMove) {
     //Behold: if statements!
     int count = 0;
     int x = PawnPos[0]; int y = PawnPos[1];
@@ -160,7 +160,7 @@ int PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves, Pendul
         RegisterMove(x - 1, new_y, PawnPos, Moves, &count, &Opp_side, 'p');
     }
     
-    int rec_x = MoveOrder.Last_move[0]; int rec_y = MoveOrder.Last_move[1];
+    int rec_x = LastMove.x; int rec_y = LastMove.y;
     if (rec_y == y && Opp_side.PieceTypes[rec_x][rec_y] == 'p') {
         RegisterMove(rec_x, rec_y, PawnPos, Moves, &count, &Opp_side, 'p');
     }
