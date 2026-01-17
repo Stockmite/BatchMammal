@@ -282,7 +282,7 @@ float PawnActivity(int PawnPos[2]) {
     return RoundFloatValue(b);
 }
 
-float EvaluateSpecificPosition(Side WSide, Side BSide) {
+float EvaluateSpecificPosition(Side WSide, Side BSide, move * SquareMoves[8][8]) {
 
     char * Wpieces = Get_Pieces(WSide);
     char * Bpieces = Get_Pieces(BSide);
@@ -351,6 +351,8 @@ float EvaluateSpecificPosition(Side WSide, Side BSide) {
 }
 
 float Evaluate(Side WSide, Side BSide, move * BestMove, Pendulum * order) {
+
+    move * MovesByPiece[8][8];
 
     
 
