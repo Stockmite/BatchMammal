@@ -277,7 +277,7 @@ int QueenMoves(Side Cur_side, Side Opp_side, int QueenPos[2], move * Moves) {
     int control = RookMoves(Cur_side, Opp_side, QueenPos, Moves, false);
     control += BishopMoves(Cur_side, Opp_side, QueenPos, Moves+control, false);
 
-    if (control < 20) {
+    if (control < 27) {
         Moves = realloc(Moves, sizeof(move) * control);
     }
 
