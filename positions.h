@@ -326,32 +326,17 @@ float EvaluateSpecificPosition(Side WSide, Side BSide, move * SquareMoves[8][8],
             switch (Cur_side->PieceTypes[x][y]) {
                 case 'p':
                     activity += PawnActivity(Pos) * dire;
-                    SquareMoves[x][y] = malloc(sizeof(move) * 12);
-                    SquareMoves[x][y] = PawnMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
-                    *len++;
                     break;
                 case 'Q':
-                    SquareMoves[x][y] = malloc(sizeof(move) * 27);
-                    SquareMoves[x][y] = QueenMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
-                    *len++;
                     activity += QueenActivity(Pos, *Cur_side, *Opp_side) * dire;
                     break;
                 case 'N':
-                    SquareMoves[x][y] = malloc(sizeof(move) * 8);
-                    SquareMoves[x][y] = KnightMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
-                    *len++;
                     activity += KnightActivity(Pos, *Cur_side, *Opp_side) * dire;
                     break;
                 case 'R':
-                    SquareMoves[x][y] = malloc(sizeof(move) * 14);
-                    SquareMoves[x][y] = RookMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y], true);
-                    *len++;
                     activity += RookActivity(Pos, *Cur_side, *Opp_side) * dire;
                     break;
                 case 'B':
-                    SquareMoves[x][y] = malloc(sizeof(move) * 13);
-                    SquareMoves[x][y] = BishopMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y], true);
-                    *len++;
                     activity += BishopActivity(Pos, *Cur_side, *Opp_side) * dire;
                     break;
                 default:
@@ -395,6 +380,19 @@ float EvaluateSpecificPosition(Side WSide, Side BSide, move * SquareMoves[8][8],
     return activity + king_safety + structure + material;
 
     
+}
+
+float JudgeABranch(Side WSide, Side BSide, move * SquareMoves[8][8], int cur_depth) {
+
+    bool GetMoves = true;
+    int len = 0;
+
+    if (cur_depth > depth) {GetMoves = false;}
+
+    float CurEvaluation = EvaluateSpecificPosition(WSide, BSide, SquareMoves[8][8], &len, GetMoves);
+
+    if (!GetMoves) {return CurEvaluation;}
+
 }
 
 float Evaluate(Side WSide, Side BSide, move * BestMove, Pendulum * order) {
