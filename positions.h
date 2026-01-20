@@ -282,7 +282,7 @@ float PawnActivity(int PawnPos[2]) {
     return RoundFloatValue(b);
 }
 
-float EvaluateSpecificPosition(Side WSide, Side BSide, move * SquareMoves[8][8], move LastMove) {
+float EvaluateSpecificPosition(Side WSide, Side BSide, move * SquareMoves[8][8], int * len, bool GetMoves) {
 
     char * Wpieces = Get_Pieces(WSide);
     char * Bpieces = Get_Pieces(BSide);
@@ -327,30 +327,67 @@ float EvaluateSpecificPosition(Side WSide, Side BSide, move * SquareMoves[8][8],
                 case 'p':
                     activity += PawnActivity(Pos) * dire;
                     SquareMoves[x][y] = malloc(sizeof(move) * 12);
-                    SquareMoves[x][y] = PawnMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y], LastMove);
+                    SquareMoves[x][y] = PawnMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
+                    *len++;
                     break;
                 case 'Q':
                     SquareMoves[x][y] = malloc(sizeof(move) * 27);
                     SquareMoves[x][y] = QueenMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
+                    *len++;
                     activity += QueenActivity(Pos, *Cur_side, *Opp_side) * dire;
                     break;
                 case 'N':
                     SquareMoves[x][y] = malloc(sizeof(move) * 8);
                     SquareMoves[x][y] = KnightMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
+                    *len++;
                     activity += KnightActivity(Pos, *Cur_side, *Opp_side) * dire;
                     break;
                 case 'R':
                     SquareMoves[x][y] = malloc(sizeof(move) * 14);
                     SquareMoves[x][y] = RookMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y], true);
+                    *len++;
                     activity += RookActivity(Pos, *Cur_side, *Opp_side) * dire;
                     break;
                 case 'B':
                     SquareMoves[x][y] = malloc(sizeof(move) * 13);
                     SquareMoves[x][y] = BishopMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y], true);
+                    *len++;
                     activity += BishopActivity(Pos, *Cur_side, *Opp_side) * dire;
                     break;
                 default:
                     break;
+            }
+
+            if (GetMoves) {
+                switch (Cur_side->PieceTypes[x][y]) {
+                case 'p':
+                    SquareMoves[x][y] = malloc(sizeof(move) * 12);
+                    SquareMoves[x][y] = PawnMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
+                    *len++;
+                    break;
+                case 'Q':
+                    SquareMoves[x][y] = malloc(sizeof(move) * 27);
+                    SquareMoves[x][y] = QueenMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
+                    *len++;
+                    break;
+                case 'N':
+                    SquareMoves[x][y] = malloc(sizeof(move) * 8);
+                    SquareMoves[x][y] = KnightMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
+                    *len++;
+                    break;
+                case 'R':
+                    SquareMoves[x][y] = malloc(sizeof(move) * 14);
+                    SquareMoves[x][y] = RookMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y], true);
+                    *len++;
+                    break;
+                case 'B':
+                    SquareMoves[x][y] = malloc(sizeof(move) * 13);
+                    SquareMoves[x][y] = BishopMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y], true);
+                    *len++;
+                    break;
+                default:
+                    break;
+            }
             }
         }
     }

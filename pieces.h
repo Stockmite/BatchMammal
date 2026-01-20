@@ -32,6 +32,7 @@ typedef struct {
     bool Which_side;
     PawnNode BaseNodes[8];
     PawnNode PawnNodes[8];
+    move LastMove;
     int KingPos[2];
     int backrank;
     int direction;
@@ -131,7 +132,7 @@ void Destroy_Piece(Side * Cur_side, Side * Opp_side, int piecePos[2]) {
 
 }
 
-int PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves, move LastMove) {
+int PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves) {
     //Behold: if statements!
     int count = 0;
     int x = PawnPos[0]; int y = PawnPos[1];
@@ -160,7 +161,7 @@ int PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves, move L
         RegisterMove(x - 1, new_y, PawnPos, Moves, &count, &Opp_side, 'p');
     }
     
-    int rec_x = LastMove.x; int rec_y = LastMove.y;
+    int rec_x = Opp_side.LastMove.x; int rec_y = Opp_side.LastMove.y;
     if (rec_y == y && Opp_side.PieceTypes[rec_x][rec_y] == 'p') {
         RegisterMove(rec_x, rec_y, PawnPos, Moves, &count, &Opp_side, 'p');
     }
