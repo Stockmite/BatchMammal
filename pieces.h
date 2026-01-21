@@ -38,12 +38,6 @@ typedef struct {
     int direction;
 } Side;
 
-typedef struct { //Might use this later
-    int move;
-    bool turn;
-    int Last_move[2];
-} Pendulum;
-
 //README: Please treat "true" as 1 and "false" as 0
 
 bool GetSquareColor(int l, int f) {
@@ -306,8 +300,10 @@ void MovePiece(int OgPos[2], int NewPos[2], Side * Cur_side, Side * Opp_side, ch
     Create_Piece(piece, Cur_side, Opp_side, NewPos);
 }
 
-void MakeAMove(move Move, int OgPos[2], Side * Cur_side, Side * Opp_side, char piece) {
-    int ox = OgPos[0]; int oy = OgPos[1];
+void MakeAMove(move Move, Side * Cur_side, Side * Opp_side, char piece) {
+
+    int ox = Move.ox; int oy = Move.oy;
+    int OgPos[2] = {ox, oy};
     int NewPos[2] = {Move.x, Move.y};
     int OgOtherPiece[2];
     int nx = Move.x; int ny = Move.y;

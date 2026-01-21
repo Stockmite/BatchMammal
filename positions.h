@@ -282,7 +282,7 @@ float PawnActivity(int PawnPos[2]) {
     return RoundFloatValue(b);
 }
 
-float EvaluateSpecificPosition(Side WSide, Side BSide, move * SquareMoves[8][8], int * len, bool GetMoves) {
+float EvaluateSpecificPosition(Side WSide, Side BSide, move * SquareMoves[8][8], int len[8][8], bool GetMoves) {
 
     char * Wpieces = Get_Pieces(WSide);
     char * Bpieces = Get_Pieces(BSide);
@@ -347,33 +347,28 @@ float EvaluateSpecificPosition(Side WSide, Side BSide, move * SquareMoves[8][8],
                 switch (Cur_side->PieceTypes[x][y]) {
                 case 'p':
                     SquareMoves[x][y] = malloc(sizeof(move) * 12);
-                    SquareMoves[x][y] = PawnMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
-                    *len++;
+                    len[x][y] = PawnMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
                     break;
                 case 'Q':
                     SquareMoves[x][y] = malloc(sizeof(move) * 27);
-                    SquareMoves[x][y] = QueenMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
-                    *len++;
+                    len[x][y] = QueenMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
                     break;
                 case 'N':
                     SquareMoves[x][y] = malloc(sizeof(move) * 8);
-                    SquareMoves[x][y] = KnightMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
-                    *len++;
+                    len[x][y] = KnightMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
                     break;
                 case 'R':
                     SquareMoves[x][y] = malloc(sizeof(move) * 14);
-                    SquareMoves[x][y] = RookMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y], true);
-                    *len++;
+                    len[x][y] = RookMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y], true);
                     break;
                 case 'B':
                     SquareMoves[x][y] = malloc(sizeof(move) * 13);
-                    SquareMoves[x][y] = BishopMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y], true);
-                    *len++;
+                    len[x][y] = BishopMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y], true);
                     break;
                 default:
                     break;
             }
-            }
+            } else {SquareMoves[x][y] == NULL;}
         }
     }
     
@@ -382,20 +377,44 @@ float EvaluateSpecificPosition(Side WSide, Side BSide, move * SquareMoves[8][8],
     
 }
 
-float JudgeABranch(Side WSide, Side BSide, move * SquareMoves[8][8], int cur_depth) {
+float JudgeABranch(Side WSide, Side BSide, move * SquareMoves[8][8], int cur_depth, bool turn) {
 
     bool GetMoves = true;
-    int len = 0;
+    int len[8][8];
 
     if (cur_depth > depth) {GetMoves = false;}
 
-    float CurEvaluation = EvaluateSpecificPosition(WSide, BSide, SquareMoves[8][8], &len, GetMoves);
+    float CurEvaluation = EvaluateSpecificPosition(WSide, BSide, SquareMoves[8][8], len, GetMoves);
 
     if (!GetMoves) {return CurEvaluation;}
 
+    Side * Cur_side = &WSide;
+    Side * Opp_side = &BSide;
+    Side * Buf_Ptr = Cur_side;
+    bool cur_turn = turn;
+
+    if (turn == black) {
+        Cur_side = Opp_side;
+        Opp_side = &WSide;
+        Buf_Ptr = Cur_side;
+    }
+
+    for (int x = 0; x < 8; x++) {
+        for (int y = 0; y < 8; y++) {
+            if (Cur_side->PieceTypes[x][y]) {
+                for (int ind = 0; ind < len[x][y]; ind++) {
+        
+                move ChosenMove = SquareMoves[x][y][ind];
+                int PiecePos[2] = {ChosenMove.ox, ChosenMove.oy};
+                MakeAMove(ChosenMove, Cur_side, Opp_side, Cur_side->PieceTypes[x][y]);
+            }
+            }
+        }
+    }
+
 }
 
-float Evaluate(Side WSide, Side BSide, move * BestMove, Pendulum * order) {
+float Evaluate(Side WSide, Side BSide, move * BestMove, bool turn) {
 
     move * MovesByPiece[8][8];
 
