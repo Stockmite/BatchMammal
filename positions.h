@@ -379,6 +379,8 @@ float EvaluateSpecificPosition(Side WSide, Side BSide, move * SquareMoves[8][8],
 
 float JudgeABranch(Side WSide, Side BSide, move * SquareMoves[8][8], int cur_depth, bool turn) {
 
+    float BestLineVal = 0.0f;
+
     bool GetMoves = true;
     int len[8][8];
 
@@ -388,18 +390,22 @@ float JudgeABranch(Side WSide, Side BSide, move * SquareMoves[8][8], int cur_dep
 
     if (!GetMoves) {return CurEvaluation;}
 
-    Side * Cur_side = &WSide;
-    Side * Opp_side = &BSide;
+    Side BufW = WSide;
+    Side BufB = BSide;
+
+    Side * Cur_side = &BufW;
+    Side * Opp_side = &BufB;
     Side * Buf_Ptr = Cur_side;
     bool cur_turn = turn;
 
     if (turn == black) {
         Cur_side = Opp_side;
-        Opp_side = &WSide;
+        Opp_side = &BufW;
         Buf_Ptr = Cur_side;
     }
 
-    for (int x = 0; x < 8; x++) {
+    for (int x = 0; x < 8; x++) { //Does this work? My intuition tell me it does;
+                                    //My first impression tells me it doesn't
         for (int y = 0; y < 8; y++) {
             if (Cur_side->PieceTypes[x][y]) {
                 for (int ind = 0; ind < len[x][y]; ind++) {
@@ -407,10 +413,20 @@ float JudgeABranch(Side WSide, Side BSide, move * SquareMoves[8][8], int cur_dep
                 move ChosenMove = SquareMoves[x][y][ind];
                 int PiecePos[2] = {ChosenMove.ox, ChosenMove.oy};
                 MakeAMove(ChosenMove, Cur_side, Opp_side, Cur_side->PieceTypes[x][y]);
+
+                move * BufMoves[8][8];
+                move BufLen[8][8];
+                float bufval = EvaluateSpecificPosition(BufW, BufB, BufMoves, BufLen, cur_depth <= depth);
+                bufval = JudgeABranch(BufW, BufB, BufMoves, depth+1, !turn); //Behold, recursive functions!
+
+                if (bufval > BestLineVal) {BestLineVal = bufval;}
+                
             }
             }
         }
     }
+
+    return BestLineVal;
 
 }
 
