@@ -282,7 +282,10 @@ float PawnActivity(int PawnPos[2]) {
     return RoundFloatValue(b);
 }
 
-float EvaluateSpecificPosition(Side WSide, Side BSide, move * SquareMoves[8][8], int len[8][8], bool GetMoves) {
+float EvaluateSpecificPosition(Board CurBoard, move * SquareMoves[8][8], int len[8][8], bool GetMoves) {
+
+    Side WSide = CurBoard.WSide;
+    Side BSide = CurBoard.BSide;
 
     char * Wpieces = Get_Pieces(WSide);
     char * Bpieces = Get_Pieces(BSide);
@@ -377,21 +380,16 @@ float EvaluateSpecificPosition(Side WSide, Side BSide, move * SquareMoves[8][8],
     
 }
 
-float JudgeABranch(Side WSide, Side BSide, move * SquareMoves[8][8], int cur_depth, bool turn) {
+float JudgeABranch(Board CurBoard, move * SquareMoves[8][8], int len[8][8], float eval, int cur_depth, bool turn, move * BestMove) {
 
+    if (cur_depth > depth) {return eval;}
     float BestLineVal = 0.0f;
 
-    bool GetMoves = true;
     int len[8][8];
 
-    if (cur_depth > depth) {GetMoves = false;}
-
-    float CurEvaluation = EvaluateSpecificPosition(WSide, BSide, SquareMoves[8][8], len, GetMoves);
-
-    if (!GetMoves) {return CurEvaluation;}
-
-    Side BufW = WSide;
-    Side BufB = BSide;
+    Side BufW = CurBoard.WSide;
+    Side BufB = CurBoard.BSide;
+    Side BufSides[2] = {BufB, BufW};
 
     Side * Cur_side = &BufW;
     Side * Opp_side = &BufB;
@@ -416,10 +414,15 @@ float JudgeABranch(Side WSide, Side BSide, move * SquareMoves[8][8], int cur_dep
 
                 move * BufMoves[8][8];
                 move BufLen[8][8];
-                float bufval = EvaluateSpecificPosition(BufW, BufB, BufMoves, BufLen, cur_depth <= depth);
-                bufval = JudgeABranch(BufW, BufB, BufMoves, depth+1, !turn); //Behold, recursive functions!
+                move BufBeMo;
+                Board TempBoard = {BufW, BufB};
+                float bufval = EvaluateSpecificPosition(TempBoard, BufMoves, BufLen, cur_depth <= depth);
+                bufval = JudgeABranch(TempBoard, BufMoves, len, eval, depth+1, !turn, &BufBeMo); //Behold, recursive functions!
 
-                if (bufval > BestLineVal) {BestLineVal = bufval;}
+                if (bufval > BestLineVal) {BestLineVal = bufval; *BestMove = ChosenMove;}
+
+                *Cur_side = BufSides[turn];
+                *Opp_side = BufSides[!turn];
                 
             }
             }
@@ -430,10 +433,15 @@ float JudgeABranch(Side WSide, Side BSide, move * SquareMoves[8][8], int cur_dep
 
 }
 
-float Evaluate(Side WSide, Side BSide, move * BestMove, bool turn) {
+float Evaluate(Board CurBoard, move * BestMove, bool turn) {
 
     move * MovesByPiece[8][8];
+    int len[8][8];
+    int cur_depth = 0;
 
-    
+    float CurEvaluation = EvaluateSpecificPosition(CurBoard, MovesByPiece, len, cur_depth <= depth);
+    CurEvaluation = JudgeABranch(CurBoard, MovesByPiece, len, CurEvaluation, cur_depth+1, turn, BestMove);
+
+    return CurEvaluation;
 
 }

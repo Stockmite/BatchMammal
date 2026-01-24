@@ -25,6 +25,7 @@ typedef struct {
 typedef struct {
     int Pieces[8][8];
     char PieceTypes[8][8];
+    int Attacks[8][8];
     bool HasKingMoved;
     bool HasAFrookMoved;
     bool HasHFrookMoved;
@@ -37,6 +38,13 @@ typedef struct {
     int backrank;
     int direction;
 } Side;
+
+typedef struct{
+
+    Side WSide;
+    Side BSide;
+
+} Board;
 
 //README: Please treat "true" as 1 and "false" as 0
 
