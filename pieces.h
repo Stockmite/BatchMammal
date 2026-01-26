@@ -220,17 +220,17 @@ int KingMoves(Side Cur_side, Side Opp_side, int KingPos[2], move * Moves) {
             if ((new_x== x && new_y == y) || !does_square_exist) {continue;}
             if (!does_square_have_enemy_piece && IsThereAPiece(Cur_side, Opp_side, new_x, new_y)) {continue;}
 
-            RegisterMove(new_x, new_y, KingMoves, Moves, &count, &Opp_side, 'K');
+            RegisterMove(new_x, new_y, KingPos, Moves, &count, &Opp_side, 'K');
         }
     }
 
     if (!(Cur_side.HasKingMoved && Cur_side.IsBackrankAttacked)) {
         if (!Cur_side.HasAFrookMoved) {
-            RegisterMove(3, Cur_side.backrank, KingMoves, Moves, &count, &Opp_side, 'K');
+            RegisterMove(3, Cur_side.backrank, KingPos, Moves, &count, &Opp_side, 'K');
             Moves[count - 1].promotion = 'K';  //slight alteration to make it clear this is about castling
         }
         if (!Cur_side.HasHFrookMoved) {
-            RegisterMove(6, Cur_side.backrank, KingMoves, Moves, &count, &Opp_side, 'K');
+            RegisterMove(6, Cur_side.backrank, KingPos, Moves, &count, &Opp_side, 'K');
         }
     }
 

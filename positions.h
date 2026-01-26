@@ -385,8 +385,6 @@ float JudgeABranch(Board CurBoard, move * SquareMoves[8][8], int len[8][8], floa
     if (cur_depth > depth) {return eval;}
     float BestLineVal = 0.0f;
 
-    int len[8][8];
-
     Side BufW = CurBoard.WSide;
     Side BufB = CurBoard.BSide;
     Side BufSides[2] = {BufB, BufW};
@@ -413,7 +411,7 @@ float JudgeABranch(Board CurBoard, move * SquareMoves[8][8], int len[8][8], floa
                 MakeAMove(ChosenMove, Cur_side, Opp_side, Cur_side->PieceTypes[x][y]);
 
                 move * BufMoves[8][8];
-                move BufLen[8][8];
+                int BufLen[8][8];
                 move BufBeMo;
                 Board TempBoard = {BufW, BufB};
                 float bufval = EvaluateSpecificPosition(TempBoard, BufMoves, BufLen, cur_depth <= depth);
