@@ -80,7 +80,7 @@ void RegisterMove(int x, int y, int PiecePos[2], move * Buff, int * ind, Side * 
                 Buff[dind+a].x = x; Buff[dind+a].y = y;
                 Buff[dind+a].ox = ox; Buff[dind+a].oy = oy; 
                 Buff[dind+a].promotion = Promotions[a];
-                Buff[dind+a].piece = Opp_side->Pieces[ox][oy];
+                Buff[dind+a].piece = 'p';
                 *ind++;
             }
             return;
