@@ -20,6 +20,7 @@ typedef struct {
     int y;
     int ox; int oy;
     char promotion;
+    char piece;
 } move;
 
 typedef struct {
@@ -79,6 +80,7 @@ void RegisterMove(int x, int y, int PiecePos[2], move * Buff, int * ind, Side * 
                 Buff[dind+a].x = x; Buff[dind+a].y = y;
                 Buff[dind+a].ox = ox; Buff[dind+a].oy = oy; 
                 Buff[dind+a].promotion = Promotions[a];
+                Buff[dind+a].piece = Opp_side->Pieces[ox][oy];
                 *ind++;
             }
             return;
@@ -88,6 +90,7 @@ void RegisterMove(int x, int y, int PiecePos[2], move * Buff, int * ind, Side * 
     Buff[dind].x = x; Buff[dind].y = y;
     Buff[dind].ox = ox; Buff[dind].oy = oy;
     Buff[dind].promotion = 'a';
+    Buff[dind].piece = Opp_side->Pieces[ox][oy];
     *ind++;
 
 }

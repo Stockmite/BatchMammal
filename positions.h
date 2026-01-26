@@ -313,6 +313,7 @@ float EvaluateSpecificPosition(Board CurBoard, move * SquareMoves[8][8], int len
 
     for (int x = 0; x < 8; x++) {
         for (int y = 0; y < 8; y++) {
+            len[x][y] = 0;
             int Pos[2] = {x,y};
 
             if (WSide.Pieces[x][y]) {
@@ -403,7 +404,7 @@ float JudgeABranch(Board CurBoard, move * SquareMoves[8][8], int len[8][8], floa
     for (int x = 0; x < 8; x++) { //Does this work? My intuition tell me it does;
                                     //My first impression tells me it doesn't
         for (int y = 0; y < 8; y++) {
-            if (Cur_side->PieceTypes[x][y]) {
+            if (Cur_side->PieceTypes[x][y] != 'a') {
                 for (int ind = 0; ind < len[x][y]; ind++) {
         
                 move ChosenMove = SquareMoves[x][y][ind];
