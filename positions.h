@@ -381,6 +381,15 @@ float EvaluateSpecificPosition(Board CurBoard, move * SquareMoves[8][8], int len
     
 }
 
+void ViewBoard(Board CurBoard) {
+    for (int y=0; y<8; y++) {
+        for (int x=0; x<8; x++) {
+            printf("%c ", CurBoard.BSide.PieceTypes[x][y]);
+        }
+        printf("\n");
+    }
+}
+
 float JudgeABranch(Board CurBoard, move * SquareMoves[8][8], int len[8][8], float eval, int cur_depth, bool turn, move * BestMove) {
 
     if (cur_depth > depth) {return eval;}
@@ -416,9 +425,10 @@ float JudgeABranch(Board CurBoard, move * SquareMoves[8][8], int len[8][8], floa
                 move BufBeMo;
                 Board TempBoard = {BufW, BufB};
                 float bufval = EvaluateSpecificPosition(TempBoard, BufMoves, BufLen, cur_depth <= depth);
-                bufval = JudgeABranch(TempBoard, BufMoves, len, eval, depth+1, !turn, &BufBeMo); //Behold, recursive functions!
+                bufval = JudgeABranch(TempBoard, BufMoves, len, eval, cur_depth+1, !turn, &BufBeMo); //Behold, recursive functions!
 
-                if (bufval > BestLineVal) {BestLineVal = bufval; *BestMove = ChosenMove;}
+                bool IsBestMove = (turn == white) ? (bufval > BestLineVal) : (bufval < BestLineVal);
+                if (IsBestMove) {BestLineVal = bufval; *BestMove = ChosenMove;}
 
                 *Cur_side = BufSides[turn];
                 *Opp_side = BufSides[!turn];
