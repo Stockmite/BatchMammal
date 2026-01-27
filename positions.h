@@ -5,7 +5,7 @@
 
 #include "pieces.h"
 
-#define depth 5
+#define depth 2
 
 float RoundFloatValue(float val) {
 
@@ -282,10 +282,11 @@ float PawnActivity(int PawnPos[2]) {
     return RoundFloatValue(b);
 }
 
-float EvaluateSpecificPosition(Board CurBoard, move * SquareMoves[8][8], int len[8][8], bool GetMoves) {
+float EvaluateSpecificPosition(Board CurBoard, move * CandidateMoves, int * ind, bool GetMoves, bool turn) {
 
     Side WSide = CurBoard.WSide;
     Side BSide = CurBoard.BSide;
+    Side Sides[2] = {BSide, WSide};
 
     char * Wpieces = Get_Pieces(WSide);
     char * Bpieces = Get_Pieces(BSide);
@@ -313,7 +314,6 @@ float EvaluateSpecificPosition(Board CurBoard, move * SquareMoves[8][8], int len
 
     for (int x = 0; x < 8; x++) {
         for (int y = 0; y < 8; y++) {
-            len[x][y] = 0;
             int Pos[2] = {x,y};
 
             if (WSide.Pieces[x][y]) {
@@ -347,32 +347,33 @@ float EvaluateSpecificPosition(Board CurBoard, move * SquareMoves[8][8], int len
                     break;
             }
 
-            if (GetMoves) {
+            if (GetMoves && Sides[turn].Pieces[x][y]) {
+                int len = *ind;
                 switch (Cur_side->PieceTypes[x][y]) {
                 case 'p':
-                    SquareMoves[x][y] = malloc(sizeof(move) * 12);
-                    len[x][y] = PawnMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
+                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (len + 12));
+                    *ind = len + PawnMoves(*Cur_side, *Opp_side, Pos, CandidateMoves+len);
                     break;
                 case 'Q':
-                    SquareMoves[x][y] = malloc(sizeof(move) * 27);
-                    len[x][y] = QueenMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
+                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (len + 27));
+                    *ind = len + QueenMoves(*Cur_side, *Opp_side, Pos, CandidateMoves+len);
                     break;
                 case 'N':
-                    SquareMoves[x][y] = malloc(sizeof(move) * 8);
-                    len[x][y] = KnightMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y]);
+                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind + 8));
+                    *ind = len + KnightMoves(*Cur_side, *Opp_side, Pos, CandidateMoves+len);
                     break;
                 case 'R':
-                    SquareMoves[x][y] = malloc(sizeof(move) * 14);
-                    len[x][y] = RookMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y], true);
+                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (len + 14));
+                    *ind = len + RookMoves(*Cur_side, *Opp_side, Pos, CandidateMoves);
                     break;
                 case 'B':
-                    SquareMoves[x][y] = malloc(sizeof(move) * 13);
-                    len[x][y] = BishopMoves(*Cur_side, *Opp_side, Pos, SquareMoves[x][y], true);
+                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (len + 13));
+                    *ind = len + BishopMoves(*Cur_side, *Opp_side, Pos, CandidateMoves);
                     break;
                 default:
                     break;
             }
-            } else {SquareMoves[x][y] == NULL;}
+            } else {CandidateMoves == NULL;}
         }
     }
     
@@ -386,13 +387,18 @@ void ViewBoard(Board CurBoard) {
         for (int x=0; x<8; x++) {
             printf("%c ", CurBoard.BSide.PieceTypes[x][y]);
         }
-        printf("\n");
+        printf("\n \n");
     }
+
+    printf("\n \n \n");
+
 }
 
 float JudgeABranch(Board CurBoard, move * SquareMoves[8][8], int len[8][8], float eval, int cur_depth, bool turn, move * BestMove) {
 
-    if (cur_depth > depth) {return eval;}
+    if (cur_depth > depth) {
+        return eval;
+    }
     float BestLineVal = 0.0f;
 
     Side BufW = CurBoard.WSide;
@@ -424,7 +430,7 @@ float JudgeABranch(Board CurBoard, move * SquareMoves[8][8], int len[8][8], floa
                 int BufLen[8][8];
                 move BufBeMo;
                 Board TempBoard = {BufW, BufB};
-                float bufval = EvaluateSpecificPosition(TempBoard, BufMoves, BufLen, cur_depth <= depth);
+                float bufval = EvaluateSpecificPosition(TempBoard, BufMoves, BufLen, cur_depth <= depth, turn);
                 bufval = JudgeABranch(TempBoard, BufMoves, len, eval, cur_depth+1, !turn, &BufBeMo); //Behold, recursive functions!
 
                 bool IsBestMove = (turn == white) ? (bufval > BestLineVal) : (bufval < BestLineVal);
@@ -448,7 +454,7 @@ float Evaluate(Board CurBoard, move * BestMove, bool turn) {
     int len[8][8];
     int cur_depth = 0;
 
-    float CurEvaluation = EvaluateSpecificPosition(CurBoard, MovesByPiece, len, cur_depth <= depth);
+    float CurEvaluation = EvaluateSpecificPosition(CurBoard, MovesByPiece, len, cur_depth <= depth, turn);
     CurEvaluation = JudgeABranch(CurBoard, MovesByPiece, len, CurEvaluation, cur_depth+1, turn, BestMove);
 
     return CurEvaluation;

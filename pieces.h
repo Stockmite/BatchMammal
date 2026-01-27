@@ -172,10 +172,6 @@ int PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves) {
         RegisterMove(rec_x, rec_y, PawnPos, Moves, &count, &Opp_side, 'p');
     }
 
-    if (count < 12) {
-        Moves = realloc(Moves, sizeof(move) * count);
-    }
-
     return count;
 
 }
@@ -201,10 +197,6 @@ int KnightMoves(Side Cur_side, Side Opp_side, int KnightPos[2], move * Moves) {
                 }
             }
         }
-
-    if (count < 8) {
-        Moves = realloc(Moves, sizeof(move) * count);
-    }
 
     return count;
 
@@ -238,15 +230,11 @@ int KingMoves(Side Cur_side, Side Opp_side, int KingPos[2], move * Moves) {
         }
     }
 
-    if (count < 8) {
-        Moves = realloc(Moves, sizeof(move) * count);
-    }
-
     return count;
 
 }
 
-int BishopMoves(Side Cur_side, Side Opp_side, int BishopPos[2], move * Moves, bool Reallocate) {
+int BishopMoves(Side Cur_side, Side Opp_side, int BishopPos[2], move * Moves) {
 
     int control = 0;
     int Increment[2] = {1,1}; control = GetAttack(BishopPos, Cur_side, Opp_side, Increment, Moves, control);
@@ -254,15 +242,11 @@ int BishopMoves(Side Cur_side, Side Opp_side, int BishopPos[2], move * Moves, bo
     Increment[1] = -1; control = GetAttack(BishopPos, Cur_side, Opp_side, Increment, Moves, control);
     Increment[0] = 1; control = GetAttack(BishopPos, Cur_side, Opp_side, Increment, Moves, control);
 
-    if (control < 13 && Reallocate) {
-        Moves = realloc(Moves, sizeof(move) * control);
-    }
-
     return control;
 
 }
 
-int RookMoves(Side Cur_side, Side Opp_side, int RookPos[2], move * Moves, bool Reallocate) {
+int RookMoves(Side Cur_side, Side Opp_side, int RookPos[2], move * Moves) {
 
     int control = 0;
     int Increment[2] = {1,0}; control = GetAttack(RookPos, Cur_side, Opp_side, Increment, Moves, control);
@@ -271,22 +255,14 @@ int RookMoves(Side Cur_side, Side Opp_side, int RookPos[2], move * Moves, bool R
     Increment[1] = 1; control = GetAttack(RookPos, Cur_side, Opp_side, Increment, Moves, control);
     Increment[1] = -1; control = GetAttack(RookPos, Cur_side, Opp_side, Increment, Moves, control);
 
-    if (control < 14 && Reallocate) {
-       Moves = realloc(Moves, sizeof(move) * control);
-    } 
-
     return control;
 
 }
 
 int QueenMoves(Side Cur_side, Side Opp_side, int QueenPos[2], move * Moves) {
 
-    int control = RookMoves(Cur_side, Opp_side, QueenPos, Moves, false);
-    control += BishopMoves(Cur_side, Opp_side, QueenPos, Moves+control, false);
-
-    if (control < 27) {
-        Moves = realloc(Moves, sizeof(move) * control);
-    }
+    int control = RookMoves(Cur_side, Opp_side, QueenPos, Moves);
+    control += BishopMoves(Cur_side, Opp_side, QueenPos, Moves+control);
 
     return control;
 
