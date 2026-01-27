@@ -67,6 +67,7 @@ bool DoesSquareExist(int l, int f) {
 
 void RegisterMove(int x, int y, int PiecePos[2], move * Buff, int * ind, Side * Opp_side, char piece) {
 
+    if (!DoesSquareExist(x, y)) {return;}
     int ox = PiecePos[0]; int oy = PiecePos[1];
 
     int dind = *ind;
@@ -81,7 +82,7 @@ void RegisterMove(int x, int y, int PiecePos[2], move * Buff, int * ind, Side * 
                 Buff[dind+a].ox = ox; Buff[dind+a].oy = oy; 
                 Buff[dind+a].promotion = Promotions[a];
                 Buff[dind+a].piece = 'p';
-                *ind++;
+                *ind = *ind + 1;
             }
             return;
         }
@@ -90,8 +91,8 @@ void RegisterMove(int x, int y, int PiecePos[2], move * Buff, int * ind, Side * 
     Buff[dind].x = x; Buff[dind].y = y;
     Buff[dind].ox = ox; Buff[dind].oy = oy;
     Buff[dind].promotion = 'a';
-    Buff[dind].piece = Opp_side->Pieces[ox][oy];
-    *ind++;
+    Buff[dind].piece = Opp_side->PieceTypes[ox][oy];
+    *ind = *ind + 1;
 
 }
 
@@ -129,7 +130,7 @@ void Create_Piece(char piece, Side * Cur_side, Side * Opp_side, int piecePos[2])
 
 void Destroy_Piece(Side * Cur_side, Side * Opp_side, int piecePos[2]) {
 
-    int x = piecePos[0]; int y = piecePos[0];
+    int x = piecePos[0]; int y = piecePos[1];
     Cur_side->PieceTypes[x][y] = 'a';
     Opp_side->PieceTypes[x][y] = 'a';
     Cur_side->Pieces[x][y] = false;
@@ -358,6 +359,8 @@ void MakeAMove(move Move, Side * Cur_side, Side * Opp_side, char piece) {
             } else if (ny == Opp_side->backrank) {
                 Destroy_Piece(Cur_side, Opp_side, OgPos);
                 Create_Piece(Move.promotion, Cur_side, Opp_side, NewPos);
+            } else {
+                MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);
             }
             break;
         default:
