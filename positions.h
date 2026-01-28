@@ -7,7 +7,7 @@
 
 char alphabet[] = "abcdefgh";
 
-#define depth 5
+#define depth 4
 
 void ViewBoard(Board CurBoard) {
     for (int y=0; y<8; y++) {
@@ -153,6 +153,7 @@ float PawnStructure(Side Cur_side, Side Opp_side) {
 }
 
 float KnightActivity(int KnightPos[2], Side Cur_side, Side Opp_side) {
+
     int x = KnightPos[0]; int y = KnightPos[1];
     int dire = Cur_side.direction;
     
@@ -255,6 +256,7 @@ float QueenActivity(int QueenPos[2], Side Cur_side, Side Opp_side) {
 
 
         while(Node1->next != NULL) {
+
             Node1 = Node1->next;
 
             int dx = p - qx; int dy = Node1->y - qy;
@@ -297,6 +299,8 @@ float PawnActivity(int PawnPos[2]) {
 }
 
 move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, bool turn) {
+
+    int buff = 0;
     
     move * CandidateMoves = malloc(sizeof(move));
     Side WSide = CurBoard.WSide;
@@ -332,6 +336,7 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, boo
     CandidateMoves = malloc(sizeof(move));
 
     for (int x = 0; x < 8; x++) {
+        buff += x;
         for (int y = 0; y < 8; y++) {
             int Pos[2] = {x,y};
 
@@ -411,8 +416,9 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, boo
 
 
 
-float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth, bool turn, move * BestMove) {
+float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth, bool turn, move * BestMove, int * var) {
 
+    printf("%d\n", *var);
     float BestLineVal = 0.0f;
 
     Side BufW = CurBoard.WSide;
@@ -435,21 +441,22 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
                 move ChosenMove = CandidateMoves[ind];
                 int PiecePos[2] = {ChosenMove.ox, ChosenMove.oy};
                 MakeAMove(ChosenMove, Cur_side, Opp_side, ChosenMove.piece);
+                *var = *var + 1;
 
                 float bufval = 0.0f;
                 int buflen = 0;
                 move BufBeMo;
                 Board TempBoard = {BufW, BufB};
+                ViewBoard(TempBoard);
                 move * BufMoves = EvaluateSpecificPosition(TempBoard, &bufval, &buflen, turn);
                 
                 if (ind == 0) {BestLineVal = bufval; *BestMove = ChosenMove;}
                 if (cur_depth+1 < depth) {
-                    bufval = JudgeABranch(TempBoard, BufMoves, buflen, cur_depth+1, !turn, &BufBeMo); //Behold, recursive functions!
+                    bufval = JudgeABranch(TempBoard, BufMoves, buflen, cur_depth+1, !turn, &BufBeMo, var); //Behold, recursive functions!
                 }
 
                 bool IsBestMove = (turn == white) ? bufval > BestLineVal : bufval < BestLineVal;
                 if (IsBestMove) {BestLineVal = bufval; *BestMove = ChosenMove;}
-                //if(BestMove->y==2){printf("best move is %c %c%d -> %f \n", ChosenMove.piece, alphabet[ChosenMove.x], ChosenMove.y, bufval);};
 
                 *Cur_side = BufSides[turn];
                 *Opp_side = BufSides[!turn];
@@ -467,9 +474,12 @@ float Evaluate(Board CurBoard, move * BestMove, bool turn) {
     int len = 0;
     int cur_depth = 0;
     float CurEvaluation = 0.0f;
+    int var = 0;
 
     move * CandidateMoves = EvaluateSpecificPosition(CurBoard, &CurEvaluation, &len, turn);
-    CurEvaluation = JudgeABranch(CurBoard, CandidateMoves, len, cur_depth+1, turn, BestMove);
+    CurEvaluation = JudgeABranch(CurBoard, CandidateMoves, len, cur_depth+1, turn, BestMove, &var);
+
+    printf("Positions calculated: %d\n", var);
 
     return CurEvaluation;
 
