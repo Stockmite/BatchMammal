@@ -81,7 +81,7 @@ void MovePawn(int OgPos[2], int NewPos[2], PawnNode BaseNodes[8]) {
     int nx = NewPos[0]; int ny = NewPos[1]; int x = OgPos[0];
 
     PawnNode * CurPawn = GetPawn(OgPos, BaseNodes);
-    if (nx == x) {CurPawn->y = ny;}
+    if (nx == x) {CurPawn->y = ny; return;}
 
     PawnNode * LastPawn = CurPawn->prev;
     PawnNode * NewPartner = GetLongPawn(nx, BaseNodes);

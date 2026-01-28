@@ -348,6 +348,9 @@ void MakeAMove(move Move, Side * Cur_side, Side * Opp_side, char piece) {
             break;
         default:
             MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);
+            if (Opp_side->PieceTypes[nx][ny] == 'p') {
+                DestroyPawn(NewPos, Cur_side->BaseNodes);
+            }
             break;
 
     }

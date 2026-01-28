@@ -7,7 +7,7 @@
 
 char alphabet[] = "abcdefgh";
 
-#define depth 3
+#define depth 2
 
 void ViewBoard(Board CurBoard) {
     for (int y=0; y<8; y++) {
