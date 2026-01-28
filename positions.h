@@ -5,7 +5,21 @@
 
 #include "pieces.h"
 
-#define depth 1
+char alphabet[] = "abcdefgh";
+
+#define depth 2
+
+void ViewBoard(Board CurBoard) {
+    for (int y=0; y<8; y++) {
+        for (int x=0; x<8; x++) {
+            printf("%c ", CurBoard.BSide.PieceTypes[7 - x][7 - y]);
+        }
+        printf("\n");
+    }
+
+    printf("\n \n \n");
+
+}
 
 float RoundFloatValue(float val) {
 
@@ -73,23 +87,23 @@ float KingSafety(Side Cur_side, int KingPos[2], char* OppPieces) {
 
     int kx = KingPos[0]; int ky = KingPos[1];
 
-    float lx = fabs((float)kx - 3.5) + 0.5;
-    float ly = fabs((float)ky - 3.5) + 0.5;
+    float lx = fabs((float)kx - 3.5f) + 0.5f;
+    float ly = fabs((float)ky - 3.5f) + 0.5f;
 
     float ChMaPower = 0.6;
     for (int ind = 0; ind < strlen(OppPieces); ind++) {
         switch (OppPieces[ind]) {
             case 'Q':
-                ChMaPower -= 0.3;
+                ChMaPower -= 0.3f;
                 break;
             case 'R':
-                ChMaPower -= 0.2;
+                ChMaPower -= 0.2f;
                 break;
             case 'N':
-                ChMaPower -= 0.1;
+                ChMaPower -= 0.1f;
                 break;
             case 'B':
-                ChMaPower -= 0.15;
+                ChMaPower -= 0.15f;
                 break;
         }
 
@@ -100,8 +114,8 @@ float KingSafety(Side Cur_side, int KingPos[2], char* OppPieces) {
             int x = kx + a; int y = ky + b;
             if (!DoesSquareExist(x, y)) {continue;}
             if (!Cur_side.Pieces[x][y]) {
-                if (Cur_side.Pieces[kx + a][ky + b]) {safety += 0.05;}
-                safety -= 0.1;
+                if (Cur_side.Pieces[kx + a][ky + b]) {safety += 0.015f;}
+                safety -= 0.025f;
             }
         }
     }
@@ -146,7 +160,7 @@ float KnightActivity(int KnightPos[2], Side Cur_side, Side Opp_side) {
 
     int conv_y = (Cur_side.direction == 1) ? y : 7 - y;
     int conv_x = (int)(fabs(3.5f - x) + 0.5f);
-    activity += ((float)(5 - x)/10.0f) + (conv_y * 0.1f);
+    activity += ((float)(5 - conv_x)/10.0f) + (conv_y * 0.1f);
 
     activity += (float)GetAPawn(x + 1, y, Cur_side.BaseNodes, Cur_side.direction) / 10.0f;
     activity += (float)GetAPawn(x - 1, y, Cur_side.BaseNodes, Cur_side.direction) / 10.0f;
@@ -387,21 +401,12 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, boo
     if (*ind > 0) {CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind));}
     
     *eval_buf = activity + king_safety + structure + material;
+
     return CandidateMoves;
     
 }
 
-void ViewBoard(Board CurBoard) {
-    for (int y=0; y<8; y++) {
-        for (int x=0; x<8; x++) {
-            printf("%c ", CurBoard.BSide.PieceTypes[x][y]);
-        }
-        printf("\n");
-    }
 
-    printf("\n \n \n");
-
-}
 
 float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth, bool turn, move * BestMove) {
 
@@ -437,15 +442,11 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
                 if (ind == 0) {BestLineVal = bufval; *BestMove = ChosenMove;}
                 if (cur_depth+1 < depth) {
                     bufval = JudgeABranch(TempBoard, BufMoves, buflen, cur_depth+1, !turn, &BufBeMo); //Behold, recursive functions!
-                } else {
-                    ViewBoard(TempBoard);
-                    free(CandidateMoves);
-                    CandidateMoves = NULL;
-                    return BestLineVal;
                 }
 
                 bool IsBestMove = (turn == white) ? bufval > BestLineVal : bufval < BestLineVal;
                 if (IsBestMove) {BestLineVal = bufval; *BestMove = ChosenMove;}
+                //if(BestMove->y==2){printf("best move is %c %c%d -> %f \n", ChosenMove.piece, alphabet[ChosenMove.x], ChosenMove.y, bufval);};
 
                 *Cur_side = BufSides[turn];
                 *Opp_side = BufSides[!turn];
