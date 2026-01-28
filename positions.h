@@ -7,7 +7,7 @@
 
 char alphabet[] = "abcdefgh";
 
-#define depth 2
+#define depth 5
 
 void ViewBoard(Board CurBoard) {
     for (int y=0; y<8; y++) {
@@ -297,7 +297,7 @@ float PawnActivity(int PawnPos[2]) {
 }
 
 move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, bool turn) {
-
+    
     move * CandidateMoves = malloc(sizeof(move));
     Side WSide = CurBoard.WSide;
     Side BSide = CurBoard.BSide;

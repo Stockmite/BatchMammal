@@ -108,6 +108,6 @@ void DestroyPawn(int PawnPos[2], PawnNode BaseNodes[8]) {
     PawnNode * Pawn = GetPawn(PawnPos, BaseNodes);
     Pawn->y = -1;
     (Pawn->prev)->next = Pawn->next;
-    (Pawn->next)->prev = Pawn->prev;
+    if (Pawn->next != NULL) {(Pawn->next)->prev = Pawn->prev;}
 
 }
