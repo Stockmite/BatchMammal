@@ -5,7 +5,7 @@
 
 #include "pieces.h"
 
-#define depth 5
+#define depth 1
 
 float RoundFloatValue(float val) {
 
@@ -438,6 +438,7 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
                 if (cur_depth+1 < depth) {
                     bufval = JudgeABranch(TempBoard, BufMoves, buflen, cur_depth+1, !turn, &BufBeMo); //Behold, recursive functions!
                 } else {
+                    ViewBoard(TempBoard);
                     free(CandidateMoves);
                     CandidateMoves = NULL;
                     return BestLineVal;
