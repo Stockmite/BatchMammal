@@ -330,12 +330,19 @@ void MakeAMove(move Move, Side * Cur_side, Side * Opp_side, char piece) {
                 OgOtherPiece[1] = oy;
 
                 MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);
+                MovePawn(OgPos, NewPos, Cur_side->BaseNodes);
                 Destroy_Piece(Opp_side, Cur_side, OgOtherPiece);
+                DestroyPawn(OgOtherPiece, Cur_side->BaseNodes);
                 
             } else if (ny == Opp_side->backrank) {
                 Destroy_Piece(Cur_side, Opp_side, OgPos);
+                DestroyPawn(OgPos, Cur_side->BaseNodes);
                 Create_Piece(Move.promotion, Cur_side, Opp_side, NewPos);
             } else {
+                if (Opp_side->PieceTypes[nx][ny] == 'p') {
+                    DestroyPawn(NewPos, Cur_side->BaseNodes);
+                }
+                MovePawn(OgPos, NewPos, Cur_side->BaseNodes);
                 MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);
             }
             break;

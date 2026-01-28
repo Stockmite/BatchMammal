@@ -7,7 +7,7 @@
 
 char alphabet[] = "abcdefgh";
 
-#define depth 2
+#define depth 3
 
 void ViewBoard(Board CurBoard) {
     for (int y=0; y<8; y++) {
@@ -30,7 +30,7 @@ float RoundFloatValue(float val) {
 
 char * Get_Pieces(Side Cur_side) {
 
-    char * AllPieces = (char*)malloc(sizeof(char) * 17);
+    char * AllPieces = (char*)malloc(sizeof(char) * 18);
     int count = 0;
     
     for (int x = 0; x < 8; x++) {
@@ -311,6 +311,9 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, boo
 
     float wking_safety = KingSafety(WSide, WSide.KingPos, Bpieces);
     float bking_safety = KingSafety(BSide, BSide.KingPos, Wpieces);
+
+    free(Wpieces); Wpieces = NULL;
+    free(Bpieces); Bpieces = NULL;
 
     float wstructure = PawnStructure(WSide, BSide);
     float bstructure = PawnStructure(BSide, WSide);
