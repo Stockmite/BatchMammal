@@ -96,11 +96,16 @@ void RegisterMove(int x, int y, int PiecePos[2], move * Buff, int * ind, Side * 
 
 }
 
+bool IsTheMove(char * movename, move Move) {
+    //return (alphabet[Move.x] == movename[1] && (Move.y + 1) == atoi(movename[2]) && Move.piece == movename[0]);
+}
+
 int GetAttack(int pos[2], Side Cur_side, Side Opp_side, int Increment[2], move * Squares, int control) {
 
     int x = pos[0]; int y = pos[1];
     int buf_x = x; int buf_y = y;
     int control_buf = control;
+    char piece = Cur_side.PieceTypes[x][y];
 
     while (true) {
 
@@ -109,7 +114,7 @@ int GetAttack(int pos[2], Side Cur_side, Side Opp_side, int Increment[2], move *
 
         if (!DoesSquareExist(buf_x, buf_y) || Cur_side.Pieces[buf_x][buf_y]) {break;}
 
-        RegisterMove(buf_x, buf_y, pos, Squares, &control_buf, &Opp_side, 'a');
+        RegisterMove(buf_x, buf_y, pos, Squares, &control_buf, &Opp_side, piece);
         if (enemy_piece) {break;}
 
     }
@@ -288,13 +293,14 @@ void MovePiece(int OgPos[2], int NewPos[2], Side * Cur_side, Side * Opp_side, ch
     Create_Piece(piece, Cur_side, Opp_side, NewPos);
 }
 
-void MakeAMove(move Move, Side * Cur_side, Side * Opp_side, char piece) {
+void MakeAMove(move Move, Side * Cur_side, Side * Opp_side) {
 
     int ox = Move.ox; int oy = Move.oy;
     int OgPos[2] = {ox, oy};
     int NewPos[2] = {Move.x, Move.y};
     int OgOtherPiece[2];
     int nx = Move.x; int ny = Move.y;
+    char piece = Move.piece;
 
     switch (piece) {
         //There's probably a smarter way to do what I'm doing, but this'll work for now
@@ -329,27 +335,27 @@ void MakeAMove(move Move, Side * Cur_side, Side * Opp_side, char piece) {
 
                 OgOtherPiece[1] = oy;
 
-                MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);
-                MovePawn(OgPos, NewPos, Cur_side->BaseNodes);
                 Destroy_Piece(Opp_side, Cur_side, OgOtherPiece);
-                DestroyPawn(OgOtherPiece, Cur_side->BaseNodes);
+                MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);
+                //MovePawn(OgPos, NewPos, Cur_side->BaseNodes);
+                //DestroyPawn(OgOtherPiece, Cur_side->BaseNodes);
                 
             } else if (ny == Opp_side->backrank) {
                 Destroy_Piece(Cur_side, Opp_side, OgPos);
-                DestroyPawn(OgPos, Cur_side->BaseNodes);
+                //DestroyPawn(OgPos, Cur_side->BaseNodes);
                 Create_Piece(Move.promotion, Cur_side, Opp_side, NewPos);
             } else {
                 if (Opp_side->PieceTypes[nx][ny] == 'p') {
-                    DestroyPawn(NewPos, Cur_side->BaseNodes);
+                    //DestroyPawn(NewPos, Cur_side->BaseNodes);
                 }
-                MovePawn(OgPos, NewPos, Cur_side->BaseNodes);
+                //MovePawn(OgPos, NewPos, Cur_side->BaseNodes);
                 MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);
             }
             break;
         default:
             MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);
             if (Opp_side->PieceTypes[nx][ny] == 'p') {
-                DestroyPawn(NewPos, Cur_side->BaseNodes);
+                //DestroyPawn(NewPos, Cur_side->BaseNodes);
             }
             break;
 
