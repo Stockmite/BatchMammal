@@ -9,6 +9,38 @@ char alphabet[] = "abcdefgh";
 
 #define depth 4
 
+//This is going to tank performance, but I am desperate to see this engine working
+float GetAttackStren(int Increment[2], int Pos[2], Side SSide) {
+    int x = Pos[0]; int y = Pos[1];
+    int BufPos[2] = {x, y};
+
+    float strenght = 0.0f;
+    while (DoesSquareExist(BufPos[0], BufPos[1])) {
+        BufPos[0] += Increment[0]; BufPos[1] += Increment[1];
+        if (SSide.PieceTypes[BufPos[0]][BufPos[1]] != 'a') {
+            if (strenght < 0.0f) {return 0.2f;}
+            strenght -= 0.1f;
+        }
+    }
+
+    return strenght;
+}
+
+float GetAttackLen(int Increment[2], int Pos[2], Side SSide) {
+    int x = Pos[0]; int y = Pos[1];
+    int BufPos[2] = {x, y};
+
+    float val = 0.0f;
+    while (DoesSquareExist(BufPos[0], BufPos[1])) {
+        BufPos[0] += Increment[0]; BufPos[1] += Increment[1];
+        if (SSide.PieceTypes[BufPos[0]][BufPos[1]] == 'a') {
+            val += 0.5f;
+        }
+    }
+
+    return val;
+}
+
 void ViewBoard(Board CurBoard) {
     for (int y=0; y<8; y++) {
         for (int x=0; x<8; x++) {
@@ -27,9 +59,6 @@ void AssignMoveArray(move * Array1, move * Array2, int len) {
     }
 }
 
-void AssignNodeArray(PawnNode Array1[8], PawnNode Array2[8]) {
-
-}
 
 float RoundFloatValue(float val) {
 
@@ -126,7 +155,8 @@ float KingSafety(Side Cur_side, int KingPos[2], char* OppPieces) {
             if (!DoesSquareExist(x, y)) {continue;}
             if (!Cur_side.Pieces[x][y]) {
                 if (Cur_side.Pieces[kx + a][ky + b]) {safety += 0.015f * ChMaPower;}
-                safety -= 0.025f * ChMaPower;
+                int Increment[2] = {a, b};
+                safety -= (GetAttackLen(Increment, KingPos, Cur_side) + 0.025f) * ChMaPower;
             }
         }
     }
@@ -144,14 +174,14 @@ float PawnStructure(Side Cur_side, Side Opp_side) {
     float structure = 0.0;
 
     for (int p = 0; p < 8; p++) {
-        structure -= 0.1 * (float)HowManyPawnsInF(p, Cur_side.BaseNodes);
+        structure -= 0.1 * (float)Cur_side.PawnFiles[p];
 
-        int far_y = GetFurthestPawn(p, Cur_side.BaseNodes, Cur_side.direction);
-        bool ep1 = GetAPawn(p+1, far_y, Opp_side.BaseNodes, Opp_side.direction);
-        bool ep2 = GetAPawn(p-1, far_y, Opp_side.BaseNodes, Opp_side.direction);
-        bool ep3 = GetAPawn(p, far_y, Opp_side.BaseNodes, Opp_side.direction);
+        int far_y = GetFurthestPawn(p, Cur_side);
+        bool ep1 = GetAPawn(p+1, far_y, Opp_side);
+        bool ep2 = GetAPawn(p-1, far_y, Opp_side);
+        bool ep3 = GetAPawn(p, far_y, Opp_side);
 
-        if (DoesFHavePawns(p-1, Cur_side.BaseNodes) && DoesFHavePawns(p+1, Cur_side.BaseNodes)) {
+        if (DoesFHavePawns(p-1, Cur_side) && DoesFHavePawns(p+1, Cur_side)) {
             structure += 0.1;
         }
         if (ep1 && ep2 && ep3) {
@@ -174,11 +204,11 @@ float KnightActivity(int KnightPos[2], Side Cur_side, Side Opp_side) {
     int conv_x = (int)(fabs(3.5f - x) + 0.5f);
     activity += ((float)(5 - conv_x)/10.0f) + (conv_y * 0.1f);
 
-    activity += (float)GetAPawn(x + 1, y, Cur_side.BaseNodes, Cur_side.direction) / 10.0f;
-    activity += (float)GetAPawn(x - 1, y, Cur_side.BaseNodes, Cur_side.direction) / 10.0f;
+    activity += (float)GetAPawn(x + 1, y, Cur_side) / 10.0f;
+    activity += (float)GetAPawn(x - 1, y, Cur_side) / 10.0f;
 
-    activity -= (float)GetAPawn(x + 1, y, Opp_side.BaseNodes, Opp_side.direction) / 5.0f;
-    activity -= (float)GetAPawn(x - 1, y, Opp_side.BaseNodes, Opp_side.direction) / 5.0f;
+    activity -= (float)GetAPawn(x + 1, y, Opp_side) / 5.0f;
+    activity -= (float)GetAPawn(x - 1, y, Opp_side) / 5.0f;
 
     return activity;
 }
@@ -187,25 +217,17 @@ float RookActivity(int RookPos[2], Side Cur_side, Side Opp_side) {
 
     int rx = RookPos[0]; int ry = RookPos[1];
     float activity = 0.0;
+    int Increment[2] = {0,1};
 
-    for (int p = 0; p < 8; p++) {
-        PawnNode * Node1 = &(Cur_side.BaseNodes[p]);
-        PawnNode * Node2 = &(Opp_side.BaseNodes[p]);
+    activity += GetAttackStren(Increment, RookPos, Cur_side);
+    Increment[1] = -1;
+    activity += GetAttackStren(Increment, RookPos, Cur_side);
+    Increment[1] = 0; Increment[0] = 1;
+    activity += GetAttackStren(Increment, RookPos, Cur_side);
+    Increment[0] = -1;
+    activity += GetAttackStren(Increment, RookPos, Cur_side);
 
-        while(Node1->next != NULL) {
-            Node1 = Node1->next;
-            if (Node1->y == ry || p == rx) {
-                activity -= 0.1;
-            }
-        }
-
-        while(Node2->next != NULL) {
-            Node2 = Node2->next;
-            if (Node2->y == ry || p == rx) {
-                activity -= 0.1;
-            }
-        }
-    }
+    activity *= 0.5;
 
     return activity;
 
@@ -215,43 +237,14 @@ float BishopActivity(int BishopPos[2], Side Cur_side, Side Opp_side) {
 
     int bx = BishopPos[0]; int by = BishopPos[1];
     float activity = 0.0f;
+    int Increment[2] = {1,1};
 
-    for (int p = 0; p < 8; p++) {
-        PawnNode * Node1 = &(Cur_side.BaseNodes[p]);
-        PawnNode * Node2 = &(Opp_side.BaseNodes[p]);
+    activity += GetAttackStren(Increment, BishopPos, Cur_side); Increment[0] = -1;
+    activity += GetAttackStren(Increment, BishopPos, Cur_side); Increment[1] = -1;
+    activity += GetAttackStren(Increment, BishopPos, Cur_side); Increment[0] = 1;
+    activity += GetAttackStren(Increment, BishopPos, Cur_side);
 
-        while(Node1->next != NULL) {
-            Node1 = Node1->next;
-
-            int dx = p - bx; int dy = Node1->y - by;
-
-            if (abs(dx) == abs(dy)) {
-                activity -= 0.1;
-            }
-        }
-
-        while(Node2->next != NULL) {
-            Node2 = Node2->next;
-
-
-            int PawnPos1[2] = {p, Node2->y + 1};
-            int PawnPos2[2] = {p, Node2->y - 1};
-            int PawnPos3[2] = {p, Node2->y};
-
-            bool p1 = GetPawnB(PawnPos1, Opp_side.BaseNodes);
-            bool p2 = GetPawnB(PawnPos2, Opp_side.BaseNodes);
-            bool p3 = GetPawnB(PawnPos3, Opp_side.BaseNodes);
-            bool SColor = GetSquareColor(bx, by) == Node2->y;
-
-            int dx = p - bx; int dy = Node1->y - by;
-            if (abs(dx) == abs(dy)) {
-                activity -= 0.1f;
-            }
-
-            if (p3 && p1 && SColor) {activity -= 0.1f;}
-            if (p3 && p2 && SColor) {activity -= 0.1f;}
-        }
-    }
+    activity *= 0.5;
 
     return activity;
     
@@ -261,44 +254,9 @@ float QueenActivity(int QueenPos[2], Side Cur_side, Side Opp_side) {
 
 
     int qx = QueenPos[0]; int qy = QueenPos[1];
-    float activity = 0.0f;
+    float activity = BishopActivity(QueenPos, Cur_side, Opp_side) + RookActivity(QueenPos, Cur_side, Opp_side);
 
-    for (int p = 0; p < 8; p++) {
-        PawnNode * Node1 = &(Cur_side.BaseNodes[p]);
-        PawnNode * Node2 = &(Opp_side.BaseNodes[p]);
-
-
-        while(Node1->next != NULL) {
-
-            Node1 = Node1->next;
-
-            int dx = p - qx; int dy = Node1->y - qy;
-
-            if (abs(dx) == abs(dy)) {
-                activity -= 0.025f;
-            }
-
-            if (Node1->y == qy || p == qx) {
-                activity -= 0.025f;
-            }
-        }
-
-        while(Node2->next != NULL) {
-            Node2 = Node2->next;
-
-            int dx = p - qx; int dy = Node2->y - qy;
-
-            if (abs(dx) == abs(dy)) {
-                activity -= 0.025f;
-            }
-
-            if (Node2->y == qy || p == qx) {
-                activity -= 0.025f;
-            }
-        }
-    }
-
-    return activity;
+    return activity * 0.05;
 
 }
 
@@ -366,7 +324,7 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, boo
                     activity += PawnActivity(Pos) * dire;
                     break;
                 case 'Q':
-                    activity += QueenActivity(Pos, *Cur_side, *Opp_side) * dire;
+                    //activity += QueenActivity(Pos, *Cur_side, *Opp_side) * dire;
                     break;
                 case 'N':
                     activity += KnightActivity(Pos, *Cur_side, *Opp_side) * dire;
@@ -436,9 +394,6 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
     Side BufB = CurBoard.BSide;
     Side BufSides[2] = {BufB, BufW};
 
-    PawnNode BufOBaseNodes[8]; PawnNode BufCPawnNodes[8];
-    PawnNode BufCBaseNodes[8]; PawnNode BufOPawnNodes[8];
-
     Side * Cur_side = &BufW;
     Side * Opp_side = &BufB;
 
@@ -463,6 +418,7 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
                 
                 if (cur_depth+1 < depth) {
                     bufval = JudgeABranch(TempBoard, BufMoves, buflen, cur_depth+1, !turn, BestMoveBuf);
+                    bufval += can_castle;
                      //Behold, recursive functions!
                 }
                 if (ind == 0) {

@@ -16,10 +16,6 @@
 #define Rook "R";
 
 typedef struct {
-    PawnNode BaseNodes[8];
-    PawnNode PawnNodes[8];
-} NodeSet;
-typedef struct {
     int x;
     int y;
     int ox; int oy;
@@ -36,8 +32,7 @@ typedef struct {
     bool HasHFrookMoved;
     bool IsBackrankAttacked; //easier than checking each time
     bool Which_side;
-    PawnNode BaseNodes[8];
-    PawnNode PawnNodes[8];
+    int PawnFiles[8];
     move LastMove;
     int KingPos[2];
     int backrank;
@@ -50,6 +45,8 @@ typedef struct{
     Side BSide;
 
 } Board;
+
+float can_castle = 0.0f;
 
 //README: Please treat "true" as 1 and "false" as 0
 
@@ -104,6 +101,57 @@ bool IsTheMove(char * movename, move Move) {
     //return (alphabet[Move.x] == movename[1] && (Move.y + 1) == atoi(movename[2]) && Move.piece == movename[0]);
 }
 
+bool GetPawnB(int PawnPos[2], Side SSide) {
+    int x = PawnPos[0]; int y = PawnPos[1];
+
+    if (!((x > -1 && x<8) && (y > -1 && y<8))) {return false;}
+
+    return SSide.PieceTypes[x][y] == 'p' && SSide.Pieces[x][y];
+}
+
+bool GetAPawn(int x, int s, Side SSide) {
+    if (!((x > -1 && x<8) && (s > -1 && s<8))) {return false;}
+
+    int which_dire = SSide.direction;
+
+    for (int sy = SSide.backrank; sy!=s; sy+=which_dire) {
+        if (SSide.PieceTypes[x][sy] == 'p' && SSide.Pieces[x][sy]) {return true;}
+    }
+
+    return false;
+}
+
+int GetFurthestPawn(int x, Side SSide) {
+    int which_dire = SSide.direction;
+
+    if (!(x > -1 && x<8)) {return false;}
+
+    int by = SSide.backrank + 1;
+
+    for (int sy = SSide.backrank; sy!=(7-SSide.backrank); sy+=which_dire) {
+        if (SSide.PieceTypes[x][sy] == 'p' && SSide.Pieces[x][sy]) {by = sy;}
+    }
+
+    return by;
+}
+
+bool DoesFHavePawns(int x, Side SSide) {
+    if (!(x > -1 && x<8)) {return false;}
+    return SSide.PawnFiles[x] > 0;
+}
+
+void MovePawn(int x, int nx, Side SSide) {
+
+    if (nx == x) {return;}
+
+    SSide.PawnFiles[x] -= 1; SSide.PawnFiles[nx] += 1;
+
+}
+
+void DestroyPawn(int x, Side SSide) {
+    SSide.PawnFiles[x] -= 1;
+}
+
 int GetAttack(int pos[2], Side Cur_side, Side Opp_side, int Increment[2], move * Squares, int control) {
 
     int x = pos[0]; int y = pos[1];
@@ -140,6 +188,7 @@ void Create_Piece(char piece, Side * Cur_side, Side * Opp_side, int piecePos[2])
 void Destroy_Piece(Side * Cur_side, Side * Opp_side, int piecePos[2]) {
 
     int x = piecePos[0]; int y = piecePos[1];
+
     Cur_side->PieceTypes[x][y] = 'a';
     Opp_side->PieceTypes[x][y] = 'a';
     Cur_side->Pieces[x][y] = false;
@@ -213,6 +262,8 @@ int KnightMoves(Side Cur_side, Side Opp_side, int KnightPos[2], move * Moves) {
 
 int KingMoves(Side Cur_side, Side Opp_side, int KingPos[2], move * Moves) {
 
+    can_castle = 0.0f;
+
     int x = KingPos[0]; int y = KingPos[1];
     int count = 0;
 
@@ -232,9 +283,11 @@ int KingMoves(Side Cur_side, Side Opp_side, int KingPos[2], move * Moves) {
     if (!(Cur_side.HasKingMoved && Cur_side.IsBackrankAttacked)) {
         if (!Cur_side.HasAFrookMoved) {
             RegisterMove(3, Cur_side.backrank, KingPos, Moves, &count, &Opp_side, 'K');
+            can_castle += 0.2f * (float)Cur_side.direction;
             Moves[count - 1].promotion = 'K';  //slight alteration to make it clear this is about castling
         }
         if (!Cur_side.HasHFrookMoved) {
+            can_castle += 0.2f * (float)Cur_side.direction;
             RegisterMove(6, Cur_side.backrank, KingPos, Moves, &count, &Opp_side, 'K');
         }
     }
@@ -341,25 +394,28 @@ void MakeAMove(move Move, Side * Cur_side, Side * Opp_side) {
 
                 Destroy_Piece(Opp_side, Cur_side, OgOtherPiece);
                 MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);
-                MovePawn(OgPos, NewPos, Cur_side->BaseNodes);
-                DestroyPawn(OgOtherPiece, Cur_side->BaseNodes);
+                MovePawn(ox, nx, *Cur_side);
+                DestroyPawn(ox, *Opp_side);
                 
             } else if (ny == Opp_side->backrank) {
                 Destroy_Piece(Cur_side, Opp_side, OgPos);
-                DestroyPawn(OgPos, Cur_side->BaseNodes);
+                DestroyPawn(ox, *Cur_side);
+                if (Opp_side->PieceTypes[nx][ny] == 'p') {
+                    DestroyPawn(nx, *Opp_side);
+                }
                 Create_Piece(Move.promotion, Cur_side, Opp_side, NewPos);
             } else {
                 if (Opp_side->PieceTypes[nx][ny] == 'p') {
-                    DestroyPawn(NewPos, Cur_side->BaseNodes);
+                    DestroyPawn(nx, *Opp_side);
                 }
-                MovePawn(OgPos, NewPos, Cur_side->BaseNodes);
+                MovePawn(ox, nx, *Cur_side);
                 MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);
             }
             break;
         default:
             MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);
             if (Opp_side->PieceTypes[nx][ny] == 'p') {
-                DestroyPawn(NewPos, Cur_side->BaseNodes);
+                DestroyPawn(nx, *Opp_side);
             }
             break;
 
