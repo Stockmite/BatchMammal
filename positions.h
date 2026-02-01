@@ -7,7 +7,7 @@
 
 char alphabet[] = "abcdefgh";
 
-#define depth 5
+#define depth 4
 
 void ViewBoard(Board CurBoard) {
     for (int y=0; y<8; y++) {
@@ -25,6 +25,10 @@ void AssignMoveArray(move * Array1, move * Array2, int len) {
     for (int ind = 0; ind < len; ind++) {
         Array1[ind] = Array2[ind];
     }
+}
+
+void AssignNodeArray(PawnNode Array1[8], PawnNode Array2[8]) {
+
 }
 
 float RoundFloatValue(float val) {
@@ -88,6 +92,7 @@ float sum_material(char * PieceTypes) {
 }
 
 float KingSafety(Side Cur_side, int KingPos[2], char* OppPieces) {
+
 
     float safety = 0.0;
 
@@ -228,6 +233,7 @@ float BishopActivity(int BishopPos[2], Side Cur_side, Side Opp_side) {
         while(Node2->next != NULL) {
             Node2 = Node2->next;
 
+
             int PawnPos1[2] = {p, Node2->y + 1};
             int PawnPos2[2] = {p, Node2->y - 1};
             int PawnPos3[2] = {p, Node2->y};
@@ -252,6 +258,7 @@ float BishopActivity(int BishopPos[2], Side Cur_side, Side Opp_side) {
 }
 
 float QueenActivity(int QueenPos[2], Side Cur_side, Side Opp_side) {
+
 
     int qx = QueenPos[0]; int qy = QueenPos[1];
     float activity = 0.0f;
@@ -300,7 +307,7 @@ float PawnActivity(int PawnPos[2]) {
 
     float lx = fabs((float)x - 3.5f) + 0.5f;
     float ly = fabs((float)y- 3.5f) + 0.5f;
-    float b = ((1.0f/lx)) + ((1.0f/(ly * ly)));
+    float b = ((1.0f/lx)) + ((1.0f/(ly)));
     return b;
 }
 
@@ -420,7 +427,7 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, boo
 
 
 float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth, bool turn, move BestMove[depth - cur_depth]) {
-    
+
     char * SideName[] = {"black", "white"};
     int nLen = depth - (cur_depth+1);
     float BestLineVal = 0.0f;
@@ -428,6 +435,9 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
     Side BufW = CurBoard.WSide;
     Side BufB = CurBoard.BSide;
     Side BufSides[2] = {BufB, BufW};
+
+    PawnNode BufOBaseNodes[8]; PawnNode BufCPawnNodes[8];
+    PawnNode BufCBaseNodes[8]; PawnNode BufOPawnNodes[8];
 
     Side * Cur_side = &BufW;
     Side * Opp_side = &BufB;
@@ -471,6 +481,7 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
 
                 *Cur_side = CurBoard.WSide;
                 *Opp_side = CurBoard.BSide;
+
 
                 if (turn == black) {
                     *Cur_side = CurBoard.BSide;
