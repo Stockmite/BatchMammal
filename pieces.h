@@ -183,6 +183,10 @@ void Create_Piece(char piece, Side * Cur_side, Side * Opp_side, int piecePos[2])
     Cur_side->Pieces[x][y] = true;
     Opp_side->Pieces[x][y] = false;
 
+    if (piece == 'K') {
+        Cur_side->KingPos[0] = x; Cur_side->KingPos[1] = y;
+    }
+
 }
 
 void Destroy_Piece(Side * Cur_side, Side * Opp_side, int piecePos[2]) {
@@ -280,7 +284,7 @@ int KingMoves(Side Cur_side, Side Opp_side, int KingPos[2], move * Moves) {
         }
     }
 
-    if (!(Cur_side.HasKingMoved && Cur_side.IsBackrankAttacked)) {
+    if (!Cur_side.HasKingMoved && !Cur_side.IsBackrankAttacked) {
         if (!Cur_side.HasAFrookMoved) {
             RegisterMove(3, Cur_side.backrank, KingPos, Moves, &count, &Opp_side, 'K');
             can_castle += 0.2f * (float)Cur_side.direction;
@@ -382,7 +386,8 @@ void MakeAMove(move Move, Side * Cur_side, Side * Opp_side) {
                 OgOtherPiece[0] = rx; OgOtherPiece[1] = Cur_side->backrank;
                 NewPos[0] = nx+increment;
                 MovePiece(OgPos, NewPos, Cur_side, Opp_side, 'R');
-            } else {MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);}
+            } else {MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);
+            }
 
             break;
         case 'p':

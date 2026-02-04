@@ -7,7 +7,9 @@
 
 char alphabet[] = "abcdefgh";
 
-#define depth 4
+#define depth 20
+int contr = 0;
+
 
 //This is going to tank performance, but I am desperate to see this engine working
 float GetAttackStren(int Increment[2], int Pos[2], Side SSide) {
@@ -45,6 +47,24 @@ void ViewBoard(Board CurBoard) {
     for (int y=0; y<8; y++) {
         for (int x=0; x<8; x++) {
             printf("%c ", CurBoard.BSide.PieceTypes[x][7 - y]);
+        }
+        printf("\n");
+    }
+
+    printf("\n \n \n");
+
+    for (int y=0; y<8; y++) {
+        for (int x=0; x<8; x++) {
+            printf("%d ", CurBoard.BSide.Pieces[x][7 - y]);
+        }
+        printf("\n");
+    }
+
+    printf("\n \n \n");
+
+    for (int y=0; y<8; y++) {
+        for (int x=0; x<8; x++) {
+            printf("%d ", CurBoard.WSide.Pieces[x][7 - y]);
         }
         printf("\n");
     }
@@ -122,7 +142,6 @@ float sum_material(char * PieceTypes) {
 
 float KingSafety(Side Cur_side, int KingPos[2], char* OppPieces) {
 
-
     float safety = 0.0;
 
     int kx = KingPos[0]; int ky = KingPos[1];
@@ -153,7 +172,7 @@ float KingSafety(Side Cur_side, int KingPos[2], char* OppPieces) {
         for (int b = -1; b < 2; b++) {
             int x = kx + a; int y = ky + b;
             if (!DoesSquareExist(x, y)) {continue;}
-            if (!Cur_side.Pieces[x][y]) {
+            if (!Cur_side.Pieces[x][y] && !((a == 0) && (b == 0))) {
                 if (Cur_side.Pieces[kx + a][ky + b]) {safety += 0.015f * ChMaPower;}
                 int Increment[2] = {a, b};
                 safety -= (GetAttackLen(Increment, KingPos, Cur_side) + 0.025f) * ChMaPower;
@@ -269,9 +288,9 @@ float PawnActivity(int PawnPos[2]) {
     return b;
 }
 
-move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, bool turn, int cur_depth) {
+move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, bool turn) {
     
-    move * CandidateMoves = malloc(sizeof(move));
+    move * CandidateMoves = (move*)malloc(sizeof(move));
     Side WSide = CurBoard.WSide;
     Side BSide = CurBoard.BSide;
     Side Sides[2] = {BSide, WSide};
@@ -281,6 +300,16 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, boo
 
     float wvalue = sum_material(Wpieces);
     float bvalue = sum_material(Bpieces);
+
+    if (wvalue < 200.0f) {
+        *ind = 0;
+        *eval_buf = -2000.0f;
+        return CandidateMoves;
+    } else if (bvalue < 200.0f) {
+        *ind = 0;
+        *eval_buf = -2000.0f;
+        return CandidateMoves;
+    }
 
     float wking_safety = KingSafety(WSide, WSide.KingPos, Bpieces);
     float bking_safety = KingSafety(BSide, BSide.KingPos, Wpieces);
@@ -367,6 +396,11 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, boo
                     *ind = len + BishopMoves(*Cur_side, *Opp_side, Pos, CandidateMoves+len);
                     CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind+1));
                     break;
+                case 'K':
+                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (len + 8));
+                    *ind = len + KingMoves(*Cur_side, *Opp_side, Pos, CandidateMoves+len);
+                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind+1));
+                    break;
                 default:
                     break;
             }
@@ -384,15 +418,17 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, boo
 
 
 
-float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth, bool turn, move BestMove[depth - cur_depth]) {
-
-    char * SideName[] = {"black", "white"};
-    int nLen = depth - (cur_depth+1);
+float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth, bool turn, move * BestMove, float alpha, float beta) {
+    contr++;
     float BestLineVal = 0.0f;
+
+    int len = 0;
+    move * BufMoves = EvaluateSpecificPosition(CurBoard, &BestLineVal, &len, !turn);
 
     Side BufW = CurBoard.WSide;
     Side BufB = CurBoard.BSide;
     Side BufSides[2] = {BufB, BufW};
+    float alphabuf = alpha; float betabuf = beta;
 
     Side * Cur_side = &BufW;
     Side * Opp_side = &BufB;
@@ -409,30 +445,37 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
                 int PiecePos[2] = {ChosenMove.ox, ChosenMove.oy};
                 MakeAMove(ChosenMove, Cur_side, Opp_side);
                 
-                move BestMoveBuf[nLen];
+                move BestMoveBuf;
 
                 float bufval = 0.0f;
                 int buflen = 0;
                 Board TempBoard = {BufW, BufB};
-                move * BufMoves = EvaluateSpecificPosition(TempBoard, &bufval, &buflen, !turn, cur_depth);
+                move * BufMoves = EvaluateSpecificPosition(TempBoard, &bufval, &buflen, !turn);
                 
                 if (cur_depth+1 < depth) {
-                    bufval = JudgeABranch(TempBoard, BufMoves, buflen, cur_depth+1, !turn, BestMoveBuf);
+                    bufval = JudgeABranch(TempBoard, BufMoves, buflen, cur_depth+1, !turn, &BestMoveBuf, alphabuf, betabuf);
                     bufval += can_castle;
                      //Behold, recursive functions!
-                }
+                } else {free(BufMoves); BufMoves = NULL;}
+
                 if (ind == 0) {
                     BestLineVal = bufval;
-                    BestMove[0] = ChosenMove;
-                    AssignMoveArray(BestMove+1, BestMoveBuf, depth - (cur_depth+1));
+                    *BestMove = ChosenMove;
 
                 }
 
                 bool IsBestMove = (turn == white) ? bufval > BestLineVal : bufval < BestLineVal;
                 if (IsBestMove) {
                     BestLineVal = bufval;
-                    BestMove[0] = ChosenMove;
-                    AssignMoveArray(BestMove+1, BestMoveBuf, depth - (cur_depth+1));
+                    *BestMove = ChosenMove;
+                }
+
+                if (turn) {
+                    if (alphabuf < bufval) {alphabuf = bufval;}
+                } else {if (betabuf > bufval) {betabuf = bufval;}}
+
+                if (betabuf <= alphabuf) {
+                    break;
                 }
 
                 *Cur_side = CurBoard.WSide;
@@ -452,15 +495,16 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
 
 }
 
-float Evaluate(Board CurBoard, move BestMove[depth], bool turn) {
+float Evaluate(Board CurBoard, move * BestMove, bool turn) {
 
     int len = 0;
     int cur_depth = 0;
     float CurEvaluation = 0.0f;
-    
+    float alpha = -2000.0f; float beta = 2000.0f;
 
-    move * CandidateMoves = EvaluateSpecificPosition(CurBoard, &CurEvaluation, &len, turn, cur_depth);
-    CurEvaluation = JudgeABranch(CurBoard, CandidateMoves, len, cur_depth, turn, BestMove);
+    move * CandidateMoves = EvaluateSpecificPosition(CurBoard, &CurEvaluation, &len, turn);
+    CurEvaluation = JudgeABranch(CurBoard, CandidateMoves, len, cur_depth, turn, BestMove, alpha, beta);
+    printf("Positions analyzed: %d\n", contr);
 
     return CurEvaluation;
 
