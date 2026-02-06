@@ -187,6 +187,12 @@ void Create_Piece(char piece, Side * Cur_side, Side * Opp_side, int piecePos[2])
         Cur_side->KingPos[0] = x; Cur_side->KingPos[1] = y;
     }
 
+    if (Opp_side->KingPos[0] == x && Opp_side->KingPos[1] == y) {
+        Opp_side->KingPos[0] = -1;
+    }
+
+    return;
+
 }
 
 void Destroy_Piece(Side * Cur_side, Side * Opp_side, int piecePos[2]) {
@@ -197,6 +203,8 @@ void Destroy_Piece(Side * Cur_side, Side * Opp_side, int piecePos[2]) {
     Opp_side->PieceTypes[x][y] = 'a';
     Cur_side->Pieces[x][y] = false;
     Opp_side->Pieces[x][y] = false;
+
+    return;
 
 }
 
@@ -286,13 +294,14 @@ int KingMoves(Side Cur_side, Side Opp_side, int KingPos[2], move * Moves) {
 
     if (!Cur_side.HasKingMoved && !Cur_side.IsBackrankAttacked) {
         if (!Cur_side.HasAFrookMoved) {
-            RegisterMove(3, Cur_side.backrank, KingPos, Moves, &count, &Opp_side, 'K');
+            RegisterMove(2, Cur_side.backrank, KingPos, Moves, &count, &Opp_side, 'K');
             can_castle += 0.2f * (float)Cur_side.direction;
             Moves[count - 1].promotion = 'K';  //slight alteration to make it clear this is about castling
         }
         if (!Cur_side.HasHFrookMoved) {
             can_castle += 0.2f * (float)Cur_side.direction;
             RegisterMove(6, Cur_side.backrank, KingPos, Moves, &count, &Opp_side, 'K');
+            Moves[count - 1].promotion = 'K';
         }
     }
 
@@ -366,11 +375,11 @@ void MakeAMove(move Move, Side * Cur_side, Side * Opp_side) {
     switch (piece) {
         //There's probably a smarter way to do what I'm doing, but this'll work for now
         case 'K':
-            if (Move.promotion = 'K') { //i.e: if the king castled
+            if (Move.promotion == 'K') { //i.e: if the king castled
 
                 int increment = 1;
                 switch(nx) {
-                    case 6:
+                    case 2:
                         increment = 1;
                         break;
                     case 3:

@@ -7,7 +7,7 @@
 
 char alphabet[] = "abcdefgh";
 
-#define depth 20
+#define depth 4
 int contr = 0;
 
 
@@ -53,23 +53,23 @@ void ViewBoard(Board CurBoard) {
 
     printf("\n \n \n");
 
-    for (int y=0; y<8; y++) {
-        for (int x=0; x<8; x++) {
-            printf("%d ", CurBoard.BSide.Pieces[x][7 - y]);
-        }
-        printf("\n");
-    }
+    //for (int y=0; y<8; y++) {
+        //for (int x=0; x<8; x++) {
+            //printf("%d ", CurBoard.BSide.Pieces[x][7 - y]);
+        //}
+        //printf("\n");
+    //}
 
-    printf("\n \n \n");
+    //printf("\n \n \n");
 
-    for (int y=0; y<8; y++) {
-        for (int x=0; x<8; x++) {
-            printf("%d ", CurBoard.WSide.Pieces[x][7 - y]);
-        }
-        printf("\n");
-    }
+    //for (int y=0; y<8; y++) {
+        //for (int x=0; x<8; x++) {
+            //printf("%d ", CurBoard.WSide.Pieces[x][7 - y]);
+        //}
+        //printf("\n");
+    //}
 
-    printf("\n \n \n");
+    //printf("\n \n \n");
 
 }
 
@@ -307,8 +307,16 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, boo
         return CandidateMoves;
     } else if (bvalue < 200.0f) {
         *ind = 0;
-        *eval_buf = -2000.0f;
+        *eval_buf = 2000.0f;
         return CandidateMoves;
+    }
+
+    if (wvalue == 200.0f || bvalue == 200.0f) {
+        if (wvalue == bvalue) {
+            *ind = 0;
+            *eval_buf = 0.0f;
+            return CandidateMoves;
+        }
     }
 
     float wking_safety = KingSafety(WSide, WSide.KingPos, Bpieces);
@@ -422,9 +430,6 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
     contr++;
     float BestLineVal = 0.0f;
 
-    int len = 0;
-    move * BufMoves = EvaluateSpecificPosition(CurBoard, &BestLineVal, &len, !turn);
-
     Side BufW = CurBoard.WSide;
     Side BufB = CurBoard.BSide;
     Side BufSides[2] = {BufB, BufW};
@@ -451,6 +456,12 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
                 int buflen = 0;
                 Board TempBoard = {BufW, BufB};
                 move * BufMoves = EvaluateSpecificPosition(TempBoard, &bufval, &buflen, !turn);
+
+                if (fabs(bufval) == 2000.0f) {
+                    BestLineVal = bufval;
+                    break;
+                }
+
                 
                 if (cur_depth+1 < depth) {
                     bufval = JudgeABranch(TempBoard, BufMoves, buflen, cur_depth+1, !turn, &BestMoveBuf, alphabuf, betabuf);
