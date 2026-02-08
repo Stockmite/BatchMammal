@@ -7,7 +7,7 @@
 
 char alphabet[] = "abcdefgh";
 
-#define depth 4
+#define depth 6
 int contr = 0;
 
 
@@ -106,34 +106,14 @@ char * Get_Pieces(Side Cur_side) {
 
 }
 
-float sum_material(char * PieceTypes) {
+float sum_material(char * PieceTypes, int * piece_count) {
     float sum = 0;
 
     for (int x = 0; x < strlen(PieceTypes); x++) {
         char piece = PieceTypes[x];
 
-        switch (piece) {
-            case 'p':
-                sum++;
-                break;
-            case 'K':
-                sum += 200.0;
-            break;
-            case 'Q':
-                sum += 9.0;
-                break;
-            case 'N':
-                sum += 3.25;
-                break;
-            case 'B':
-                sum += 3.5;
-                break;
-            case 'R':
-                sum += 5;
-                break;
-            default:
-                break;
-            }
+        sum+=GetPieceValue(piece);
+        *piece_count = *piece_count+1;
     }
 
     return sum;
@@ -142,27 +122,27 @@ float sum_material(char * PieceTypes) {
 
 float KingSafety(Side Cur_side, int KingPos[2], char* OppPieces) {
 
-    float safety = 0.0;
+    float safety = 0.0f;
 
     int kx = KingPos[0]; int ky = KingPos[1];
 
     float lx = fabs((float)kx - 3.5f) + 0.5f;
     float ly = fabs((float)ky - 3.5f) + 0.5f;
 
-    float ChMaPower = 0.6;
+    float ChMaPower = -0.5f; //omg
     for (int ind = 0; ind < strlen(OppPieces); ind++) {
         switch (OppPieces[ind]) {
             case 'Q':
-                ChMaPower -= 0.3f;
+                ChMaPower += 0.3f;
                 break;
             case 'R':
-                ChMaPower -= 0.2f;
+                ChMaPower += 0.2f;
                 break;
             case 'N':
-                ChMaPower -= 0.1f;
+                ChMaPower += 0.1f;
                 break;
             case 'B':
-                ChMaPower -= 0.15f;
+                ChMaPower += 0.15f;
                 break;
         }
 
@@ -173,14 +153,13 @@ float KingSafety(Side Cur_side, int KingPos[2], char* OppPieces) {
             int x = kx + a; int y = ky + b;
             if (!DoesSquareExist(x, y)) {continue;}
             if (!Cur_side.Pieces[x][y] && !((a == 0) && (b == 0))) {
-                if (Cur_side.Pieces[kx + a][ky + b]) {safety += 0.015f * ChMaPower;}
                 int Increment[2] = {a, b};
                 safety -= (GetAttackLen(Increment, KingPos, Cur_side) + 0.025f) * ChMaPower;
             }
         }
     }
     
-    float xDebuff = lx * 0.1; int yDebuff = ly * 0.05;
+    float xDebuff = lx * 0.15; int yDebuff = ly * 0.1;
 
     safety += (xDebuff + yDebuff) * ChMaPower;
 
@@ -279,16 +258,16 @@ float QueenActivity(int QueenPos[2], Side Cur_side, Side Opp_side) {
 
 }
 
-float PawnActivity(int PawnPos[2]) {
+float PawnActivity(int PawnPos[2], int dire) {
     int x = PawnPos[0]; int y = PawnPos[1];
 
     float lx = fabs((float)x - 3.5f) + 0.5f;
-    float ly = fabs((float)y- 3.5f) + 0.5f;
-    float b = ((1.0f/lx)) + ((1.0f/(ly)));
+    float ly = (dire == 1) ? (float)y : (float)(7 - y);
+    float b = (ly/lx);
     return b;
 }
 
-move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, bool turn) {
+move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int * piece_count, bool turn) {
     
     move * CandidateMoves = (move*)malloc(sizeof(move));
     Side WSide = CurBoard.WSide;
@@ -298,8 +277,8 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, boo
     char * Wpieces = Get_Pieces(WSide);
     char * Bpieces = Get_Pieces(BSide);
 
-    float wvalue = sum_material(Wpieces);
-    float bvalue = sum_material(Bpieces);
+    float wvalue = sum_material(Wpieces, piece_count);
+    float bvalue = sum_material(Bpieces, piece_count);
 
     if (wvalue < 200.0f) {
         *ind = 0;
@@ -343,6 +322,7 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, boo
 
     for (int x = 0; x < 8; x++) {
         for (int y = 0; y < 8; y++) {
+            Sides[!turn].Attacks[x][y] = 0;
             int Pos[2] = {x,y};
 
             if (WSide.Pieces[x][y]) {
@@ -356,9 +336,15 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, boo
                 Opp_side = &WSide;
             }
 
+            if (Cur_side->Pieces[x][y] || Opp_side->Pieces[x][y]) {
+                char piece = Cur_side->PieceTypes[x][y];
+                float dif = Cur_side->Attacks[x][y] - GetPieceValue(piece);
+                if (dif < 0 && piece != 'K') {material -= dif * dire;}
+            }
+
             switch (Cur_side->PieceTypes[x][y]) {
                 case 'p':
-                    activity += PawnActivity(Pos) * dire;
+                    activity += PawnActivity(Pos, dire) * dire;
                     break;
                 case 'Q':
                     //activity += QueenActivity(Pos, *Cur_side, *Opp_side) * dire;
@@ -392,6 +378,7 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, boo
                 case 'N':
                     CandidateMoves = realloc(CandidateMoves, sizeof(move) * (len + 8));
                     *ind = len + KnightMoves(*Cur_side, *Opp_side, Pos, CandidateMoves+len);
+                    activity += (float)(*ind - len) * dire;
                     CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind+1));
                     break;
                 case 'R':
@@ -402,12 +389,14 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, boo
                 case 'B':
                     CandidateMoves = realloc(CandidateMoves, sizeof(move) * (len + 13));
                     *ind = len + BishopMoves(*Cur_side, *Opp_side, Pos, CandidateMoves+len);
+                    activity += (float)(*ind - len) * dire;
                     CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind+1));
                     break;
                 case 'K':
                     CandidateMoves = realloc(CandidateMoves, sizeof(move) * (len + 8));
                     *ind = len + KingMoves(*Cur_side, *Opp_side, Pos, CandidateMoves+len);
                     CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind+1));
+                    //king_safety -= ((float)(*ind - len) * 0.05f) * dire;
                     break;
                 default:
                     break;
@@ -455,7 +444,8 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
                 float bufval = 0.0f;
                 int buflen = 0;
                 Board TempBoard = {BufW, BufB};
-                move * BufMoves = EvaluateSpecificPosition(TempBoard, &bufval, &buflen, !turn);
+                int buf = 0;
+                move * BufMoves = EvaluateSpecificPosition(TempBoard, &bufval, &buflen, &buf, !turn);
 
                 if (fabs(bufval) == 2000.0f) {
                     BestLineVal = bufval;
@@ -468,7 +458,9 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
                     bufval += can_castle;
                      //Behold, recursive functions!
                 } else {free(BufMoves); BufMoves = NULL;}
-
+                if (cur_depth == 0) {
+                    printf("%c-> %c%d (%c%d): %f\n",ChosenMove.piece, alphabet[ChosenMove.x], ChosenMove.y + 1, alphabet[ChosenMove.ox], ChosenMove.oy + 1, bufval);
+                }
                 if (ind == 0) {
                     BestLineVal = bufval;
                     *BestMove = ChosenMove;
@@ -513,7 +505,13 @@ float Evaluate(Board CurBoard, move * BestMove, bool turn) {
     float CurEvaluation = 0.0f;
     float alpha = -2000.0f; float beta = 2000.0f;
 
-    move * CandidateMoves = EvaluateSpecificPosition(CurBoard, &CurEvaluation, &len, turn);
+    int piece_count = 0;
+    move * CandidateMoves = EvaluateSpecificPosition(CurBoard, &CurEvaluation, &len, &piece_count, turn);
+
+    int dif = (32 - piece_count);
+    cur_depth -= (dif - (dif % 8))/8;
+    printf("depth:%d \n", depth - cur_depth);
+
     CurEvaluation = JudgeABranch(CurBoard, CandidateMoves, len, cur_depth, turn, BestMove, alpha, beta);
     printf("Positions analyzed: %d\n", contr);
 

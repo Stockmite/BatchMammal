@@ -26,12 +26,12 @@ typedef struct {
 typedef struct {
     int Pieces[8][8];
     char PieceTypes[8][8];
-    int Attacks[8][8];
     bool HasKingMoved;
     bool HasAFrookMoved;
     bool HasHFrookMoved;
     bool IsBackrankAttacked; //easier than checking each time
     bool Which_side;
+    float Attacks[8][8];
     int PawnFiles[8];
     move LastMove;
     int KingPos[2];
@@ -66,6 +66,35 @@ bool DoesSquareExist(int l, int f) {
     return false;
 }
 
+float Max(float val1, float val2) {
+    if (val1 < val2) {return val2;} return val1;
+}
+
+float Min(float val1, float val2) {
+    if (val1 > val2) {return val2;} return val1;
+}
+
+float GetPieceValue(char piece) {
+
+    switch (piece) {
+            case 'p':
+                return 1.0f;
+            case 'K':
+                return 200.0f;
+            case 'Q':
+                return 9.0f;
+            case 'N':
+                return 3.25f;
+            case 'B':
+                return 3.5f;
+            case 'R':
+                return 5.0f;
+            default:
+                break;
+    }
+
+}
+
 void RegisterMove(int x, int y, int PiecePos[2], move * Buff, int * ind, Side * Opp_side, char piece) {
 
     if (!DoesSquareExist(x, y)) {return;}
@@ -75,7 +104,7 @@ void RegisterMove(int x, int y, int PiecePos[2], move * Buff, int * ind, Side * 
     
     if (y == Opp_side->backrank) {
         Opp_side->IsBackrankAttacked = true;
-
+        Opp_side->Attacks[x][y] = Min(Opp_side->Attacks[x][y], GetPieceValue(piece));
         if (piece=='p') {
             char Promotions[] = "QRBN";
             for (int a = 0; a < strlen(Promotions); a++) {
@@ -89,6 +118,7 @@ void RegisterMove(int x, int y, int PiecePos[2], move * Buff, int * ind, Side * 
         }
     }
 
+    //Opp_side->Attacks[x][y] = Min(Opp_side->Attacks[x][y], GetPieceValue(piece));
     Buff[dind].x = x; Buff[dind].y = y;
     Buff[dind].ox = ox; Buff[dind].oy = oy;
     Buff[dind].promotion = 'a';
@@ -221,12 +251,12 @@ int PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves) {
 
     int NewPos[2] = {x, new_y};
 
-    if (!(Opp_side.Pieces[x][new_y] || Cur_side.Pieces[x][new_y])) {
+    if (!IsThereAPiece(Cur_side, Opp_side, x, new_y)) {
         RegisterMove(x, new_y, PawnPos, Moves, &count, &Opp_side, 'p');
     }
 
     int new_y2 = new_y + fileIncrement;
-    if (y==PawnWall && !IsThereAPiece(Cur_side, Opp_side, x, new_y2)) {
+    if (y==PawnWall && !IsThereAPiece(Cur_side, Opp_side, x, new_y2) && !IsThereAPiece(Cur_side, Opp_side, x, new_y)) {
         RegisterMove(x, new_y2, PawnPos, Moves, &count, &Opp_side, 'p');
     }
 
@@ -382,17 +412,17 @@ void MakeAMove(move Move, Side * Cur_side, Side * Opp_side) {
                     case 2:
                         increment = 1;
                         break;
-                    case 3:
+                    case 6:
                         increment = -1;
                         break;
                 }
 
-                NewPos[0] = nx+increment;
-
                 MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);
 
-                int rx = GetFirstRook(increment, *Cur_side);
+                int rx = (int)(3.5f - (3.5f * (float)increment));
                 OgOtherPiece[0] = rx; OgOtherPiece[1] = Cur_side->backrank;
+                Destroy_Piece(Cur_side, Opp_side, OgOtherPiece);
+
                 NewPos[0] = nx+increment;
                 MovePiece(OgPos, NewPos, Cur_side, Opp_side, 'R');
             } else {MovePiece(OgPos, NewPos, Cur_side, Opp_side, piece);
