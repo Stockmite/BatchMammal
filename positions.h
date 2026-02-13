@@ -10,7 +10,6 @@ char alphabet[] = "abcdefgh";
 #define depth 6
 int contr = 0;
 
-
 //This is going to tank performance, but I am desperate to see this engine working
 float GetAttackStren(int Increment[2], int Pos[2], Side SSide) {
     int x = Pos[0]; int y = Pos[1];
@@ -156,6 +155,7 @@ float KingSafety(Side Cur_side, int KingPos[2], char* OppPieces) {
                 int Increment[2] = {a, b};
                 safety -= (GetAttackLen(Increment, KingPos, Cur_side) + 0.025f) * ChMaPower;
             }
+            safety -= (float)Cur_side.Attacks[x][y] * 0.05f;
         }
     }
     
@@ -268,8 +268,10 @@ float PawnActivity(int PawnPos[2], int dire) {
 }
 
 move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int * piece_count, bool turn) {
-    
+
     move * CandidateMoves = (move*)malloc(sizeof(move));
+    move * BufMoves = (move*)malloc(sizeof(move));
+
     Side WSide = CurBoard.WSide;
     Side BSide = CurBoard.BSide;
     Side Sides[2] = {BSide, WSide};
@@ -298,9 +300,6 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
         }
     }
 
-    float wking_safety = KingSafety(WSide, WSide.KingPos, Bpieces);
-    float bking_safety = KingSafety(BSide, BSide.KingPos, Wpieces);
-
     free(Wpieces); Wpieces = NULL;
     free(Bpieces); Bpieces = NULL;
 
@@ -309,7 +308,6 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
 
     float material = wvalue - bvalue;
     float structure = wstructure - bstructure;
-    float king_safety = wking_safety - bking_safety;
 
     float activity = 0.0f;
     float dire = 1.0f;
@@ -320,8 +318,21 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
     activity = 0.0F;
     CandidateMoves = malloc(sizeof(move));
 
-    for (int x = 0; x < 8; x++) {
-        for (int y = 0; y < 8; y++) {
+    int x = 4;
+    int y = 4;
+
+    for (int a = 0; a < 8; a++) {
+        for (int b = 0; b < 8; b++) {
+            Cur_side->Attacks[a][b] = false;
+            Opp_side->Attacks[a][b] = false;
+        }
+    }
+
+    for (int a = 0; a < 8; a++) {
+        x = x + (a * pow(-1, a));
+        for (int b = 0; b < 8; b++) {
+            y = y + (b * pow(-1, b));
+
             Sides[!turn].Attacks[x][y] = 0;
             int Pos[2] = {x,y};
 
@@ -378,7 +389,7 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
                 case 'N':
                     CandidateMoves = realloc(CandidateMoves, sizeof(move) * (len + 8));
                     *ind = len + KnightMoves(*Cur_side, *Opp_side, Pos, CandidateMoves+len);
-                    activity += (float)(*ind - len) * dire;
+                    activity += ((float)(*ind - len) * dire) * 0.05f;
                     CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind+1));
                     break;
                 case 'R':
@@ -389,23 +400,64 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
                 case 'B':
                     CandidateMoves = realloc(CandidateMoves, sizeof(move) * (len + 13));
                     *ind = len + BishopMoves(*Cur_side, *Opp_side, Pos, CandidateMoves+len);
-                    activity += (float)(*ind - len) * dire;
+                    activity += ((float)(*ind - len) * dire) * 0.05f;
                     CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind+1));
-                    break;
-                case 'K':
-                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (len + 8));
-                    *ind = len + KingMoves(*Cur_side, *Opp_side, Pos, CandidateMoves+len);
-                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind+1));
-                    //king_safety -= ((float)(*ind - len) * 0.05f) * dire;
                     break;
                 default:
                     break;
             }
+            } else if (Sides[!turn].Pieces[x][y]) {
+                int t = 0;
+                switch (Cur_side->PieceTypes[x][y]) {
+                case 'p':
+                    BufMoves = malloc(sizeof(move) * (12));
+                    t = PawnMoves(*Opp_side, *Cur_side, Pos, BufMoves);
+                    free(BufMoves);
+                    break;
+                case 'Q':
+                    BufMoves = malloc(sizeof(move) * (27));
+                    t = QueenMoves(*Opp_side, *Cur_side, Pos, BufMoves);
+                    free(BufMoves);
+                    break;
+                case 'N':
+                    BufMoves = malloc(sizeof(move) * (8));
+                    t = KnightMoves(*Opp_side, *Cur_side, Pos, BufMoves);
+                    free(BufMoves);
+                    break;
+                case 'R':
+                    BufMoves = malloc(sizeof(move) * (14));
+                    t = RookMoves(*Opp_side, *Cur_side, Pos, BufMoves);
+                    free(BufMoves);
+                    break;
+                case 'B':
+                    BufMoves = malloc(sizeof(move) * (13));
+                    t = BishopMoves(*Opp_side, *Cur_side, Pos, BufMoves);
+                    free(BufMoves);
+                    break;
+                default:
+                    break;
             }
         }
+
+        y = 4;
+    }
     }
 
+    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind + 8));
+    *ind = *ind + KingMoves(*Cur_side, *Opp_side, Cur_side->KingPos, CandidateMoves+*ind);
+    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind+1));
+
+    BufMoves = realloc(CandidateMoves, sizeof(move) * (12));
+    int n = KingMoves(*Opp_side, *Cur_side, Opp_side->KingPos, BufMoves);
+
+    free(BufMoves); BufMoves = NULL;
+
     if (*ind > 0) {CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind));}
+
+    float wking_safety = KingSafety(WSide, WSide.KingPos, Bpieces);
+    float bking_safety = KingSafety(BSide, BSide.KingPos, Wpieces);
+
+    float king_safety = wking_safety - bking_safety;
     
     *eval_buf = activity + king_safety + structure + material;
 

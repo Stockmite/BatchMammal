@@ -118,7 +118,7 @@ void RegisterMove(int x, int y, int PiecePos[2], move * Buff, int * ind, Side * 
         }
     }
 
-    //Opp_side->Attacks[x][y] = Min(Opp_side->Attacks[x][y], GetPieceValue(piece));
+    Opp_side->Attacks[x][y] = true;
     Buff[dind].x = x; Buff[dind].y = y;
     Buff[dind].ox = ox; Buff[dind].oy = oy;
     Buff[dind].promotion = 'a';
@@ -251,13 +251,13 @@ int PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves) {
 
     int NewPos[2] = {x, new_y};
 
-    if (!IsThereAPiece(Cur_side, Opp_side, x, new_y)) {
-        RegisterMove(x, new_y, PawnPos, Moves, &count, &Opp_side, 'p');
-    }
-
     int new_y2 = new_y + fileIncrement;
     if (y==PawnWall && !IsThereAPiece(Cur_side, Opp_side, x, new_y2) && !IsThereAPiece(Cur_side, Opp_side, x, new_y)) {
         RegisterMove(x, new_y2, PawnPos, Moves, &count, &Opp_side, 'p');
+    }
+
+    if (!IsThereAPiece(Cur_side, Opp_side, x, new_y)) {
+        RegisterMove(x, new_y, PawnPos, Moves, &count, &Opp_side, 'p');
     }
 
     if (poscap1) {
