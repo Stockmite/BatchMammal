@@ -12,8 +12,8 @@
 #define King 'K';
 #define Queen 'Q';
 #define Knight 'N';
-#define Bishop "B";
-#define Rook "R";
+#define Bishop 'B';
+#define Rook 'R';
 
 typedef struct {
     int x;
@@ -29,7 +29,6 @@ typedef struct {
     bool HasKingMoved;
     bool HasAFrookMoved;
     bool HasHFrookMoved;
-    bool IsBackrankAttacked; //easier than checking each time
     bool Which_side;
     float Attacks[8][8];
     int PawnFiles[8];
@@ -339,6 +338,53 @@ int KingMoves(Side Cur_side, Side Opp_side, int KingPos[2], move * Moves) {
 
 }
 
+bool IsBackRankAttacked(int rx, int kx, Side Cur_side) {
+    bool check = false;
+
+    int inc = (kx - rx > 0) ? 1 : -1;
+    int backrank = Cur_side.backrank;
+
+    for (int ind = rx; ind != kx+inc; ind += inc) {
+      check = check || Cur_side.Attacks[ind][backrank];
+    }
+
+    return check;
+}
+
+bool CanCastle(Side Cur_side, move * MoveBuf, int * ind) {
+    
+    int len = *ind;
+    bool check = false;
+
+    if (Cur_side.HasKingMoved) {return check};
+
+    int rx = 0; int kx = Cur_side.KingPos[0];
+    if (!Cur_side.HasHFrookMoved) {
+      rx = 7;
+      bool canshortcastle = !IsBackRankAttacked(rx, kx, Cur_side);
+      rx = 0;
+      bool canlongcastle = !IsBackRankAttacked(rx, kx, Cur_side);
+      if (canshortcastle) {
+          move ShortCastle; ShortCastle.promotion = 'K';
+          ShortCastle.piece = 'K'; ShortCastle.x = 6;
+          ShortCastle.y = backrank; ShortCastle.oy = backrank;
+          ShortCastle.ox = kx; MoveBuf[len] = ShortCastle; len++;
+      }
+      if (canlongcastle) {
+          move LongCastle; LongCastle.promotion = 'K';
+          LongCastle.piece = 'K'; LongCastle.x = 3;
+          LongCastle.y = backrank; LongCastle.oy = backrank;
+          LongCastle.ox = kx; MoveBuf[len] = LongCastle;
+      }
+
+      *ind = *ind + canshortcastle + canlongcastle;
+      return canshortcastle || canlongcastle;
+    }
+
+    return false;
+
+}
+
 int BishopMoves(Side Cur_side, Side Opp_side, int BishopPos[2], move * Moves) {
 
     int control = 0;
@@ -401,6 +447,8 @@ void MakeAMove(move Move, Side * Cur_side, Side * Opp_side) {
     int OgOtherPiece[2];
     int nx = Move.x; int ny = Move.y;
     char piece = Move.piece;
+
+    Cur_side->LastMove = Move;
 
     switch (piece) {
         //There's probably a smarter way to do what I'm doing, but this'll work for now
