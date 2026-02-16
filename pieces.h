@@ -3,8 +3,6 @@
 #include <math.h>
 #include <string.h>
 
-#include "PositionalModules\pawnstructure.h"
-
 #define black false
 #define white true
 
@@ -102,8 +100,6 @@ void RegisterMove(int x, int y, int PiecePos[2], move * Buff, int * ind, Side * 
     int dind = *ind;
     
     if (y == Opp_side->backrank) {
-        Opp_side->IsBackrankAttacked = true;
-        Opp_side->Attacks[x][y] = Min(Opp_side->Attacks[x][y], GetPieceValue(piece));
         if (piece=='p') {
             char Promotions[] = "QRBN";
             for (int a = 0; a < strlen(Promotions); a++) {
@@ -321,19 +317,6 @@ int KingMoves(Side Cur_side, Side Opp_side, int KingPos[2], move * Moves) {
         }
     }
 
-    if (!Cur_side.HasKingMoved && !Cur_side.IsBackrankAttacked) {
-        if (!Cur_side.HasAFrookMoved) {
-            RegisterMove(2, Cur_side.backrank, KingPos, Moves, &count, &Opp_side, 'K');
-            can_castle += 0.2f * (float)Cur_side.direction;
-            Moves[count - 1].promotion = 'K';  //slight alteration to make it clear this is about castling
-        }
-        if (!Cur_side.HasHFrookMoved) {
-            can_castle += 0.2f * (float)Cur_side.direction;
-            RegisterMove(6, Cur_side.backrank, KingPos, Moves, &count, &Opp_side, 'K');
-            Moves[count - 1].promotion = 'K';
-        }
-    }
-
     return count;
 
 }
@@ -344,8 +327,11 @@ bool IsBackRankAttacked(int rx, int kx, Side Cur_side) {
     int inc = (kx - rx > 0) ? 1 : -1;
     int backrank = Cur_side.backrank;
 
-    for (int ind = rx; ind != kx+inc; ind += inc) {
+    for (int ind = rx; ind != kx+inc; ind += inc) {   
       check = check || Cur_side.Attacks[ind][backrank];
+    }
+    for (int ind = rx+inc; ind != kx; ind += inc) {   
+      check = check || Cur_side.PieceTypes[ind][backrank] == 'a';
     }
 
     return check;
@@ -355,8 +341,9 @@ bool CanCastle(Side Cur_side, move * MoveBuf, int * ind) {
     
     int len = *ind;
     bool check = false;
+    int backrank = Cur_side.backrank;
 
-    if (Cur_side.HasKingMoved) {return check};
+    if (Cur_side.HasKingMoved) {return check;}
 
     int rx = 0; int kx = Cur_side.KingPos[0];
     if (!Cur_side.HasHFrookMoved) {
@@ -440,6 +427,7 @@ void MovePiece(int OgPos[2], int NewPos[2], Side * Cur_side, Side * Opp_side, ch
 }
 
 void MakeAMove(move Move, Side * Cur_side, Side * Opp_side) {
+    char alphabet[] = "abcdefgh";
 
     int ox = Move.ox; int oy = Move.oy;
     int OgPos[2] = {ox, oy};
@@ -448,11 +436,15 @@ void MakeAMove(move Move, Side * Cur_side, Side * Opp_side) {
     int nx = Move.x; int ny = Move.y;
     char piece = Move.piece;
 
+    //printf("move: %c%c%d (%c%d)\n", piece, alphabet[nx], ny+1, alphabet[ox], oy+1);
+
     Cur_side->LastMove = Move;
 
     switch (piece) {
         //There's probably a smarter way to do what I'm doing, but this'll work for now
         case 'K':
+            Cur_side->KingPos[0] = nx; Cur_side->KingPos[1] = ny;
+            Cur_side->HasKingMoved = true;
             if (Move.promotion == 'K') { //i.e: if the king castled
 
                 int increment = 1;
@@ -512,5 +504,17 @@ void MakeAMove(move Move, Side * Cur_side, Side * Opp_side) {
             break;
 
     }
-
+    //This is really stupid but it'll work for now
+    if (!Cur_side->HasAFrookMoved && !Cur_side->Pieces[0][0]) {
+      Cur_side->HasAFrookMoved = true;
+    }
+    if (!Cur_side->HasHFrookMoved && !Cur_side->Pieces[7][0]) {
+      Cur_side->HasHFrookMoved = true;
+    }                                                         
+    if (!Opp_side->HasAFrookMoved && !Opp_side->Pieces[0][7]) {
+      Opp_side->HasAFrookMoved = true;
+    }
+    if (!Opp_side->HasHFrookMoved && !Opp_side->Pieces[7][7]) {
+      Opp_side->HasHFrookMoved = true;
+    }                                                         
 }

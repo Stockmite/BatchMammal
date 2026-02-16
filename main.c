@@ -48,7 +48,6 @@ void Initialize_position(Side * S, int br, int direction, bool which_side) {
             S->HasAFrookMoved = false;
             S->HasHFrookMoved = false;
             S->HasKingMoved = true;
-            S->IsBackrankAttacked = false;
 
         }
 
