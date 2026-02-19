@@ -100,6 +100,7 @@ void RegisterMove(int x, int y, int PiecePos[2], move * Buff, int * ind, Side * 
     int dind = *ind;
     
     if (y == Opp_side->backrank) {
+        Opp_side->Attacks[x][y] = true;
         if (piece=='p') {
             char Promotions[] = "QRBN";
             for (int a = 0; a < strlen(Promotions); a++) {
@@ -163,6 +164,15 @@ int GetFurthestPawn(int x, Side SSide) {
 bool DoesFHavePawns(int x, Side SSide) {
     if (!(x > -1 && x<8)) {return false;}
     return SSide.PawnFiles[x] > 0;
+}
+
+bool IsPawnPassed(int f, int l, Side Opp_side) {
+  
+  bool ep1 = GetAPawn(f+1, l, Opp_side);
+  bool ep2 = GetAPawn(f-1, l, Opp_side);
+  bool ep3 = GetAPawn(f, l, Opp_side);
+
+  return !ep1 && !ep2 && !ep3;
 }
 
 void MovePawn(int x, int nx, Side SSide) {
@@ -263,8 +273,9 @@ int PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves) {
     }
     
     int rec_x = Opp_side.LastMove.x; int rec_y = Opp_side.LastMove.y;
-    if (rec_y == y && Opp_side.PieceTypes[rec_x][rec_y] == 'p') {
-        RegisterMove(rec_x, rec_y, PawnPos, Moves, &count, &Opp_side, 'p');
+    int dify = abs(rec_y - Opp_side.LastMove.oy); int difx = abs(rec_x - x);
+    if (rec_y == y && Opp_side.PieceTypes[rec_x][rec_y] == 'p' && dify == 2 && difx == 1) {
+        RegisterMove(rec_x, rec_y + fileIncrement, PawnPos, Moves, &count, &Opp_side, 'p');
     }
 
     return count;
@@ -371,7 +382,6 @@ bool CanCastle(Side Cur_side, move * MoveBuf, int * ind) {
     return false;
 
 }
-
 int BishopMoves(Side Cur_side, Side Opp_side, int BishopPos[2], move * Moves) {
 
     int control = 0;
