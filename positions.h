@@ -367,7 +367,7 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
     Side * Opp_side = &BSide;
 
     activity = 0.0F;
-    CandidateMoves = malloc(sizeof(move));
+    CandidateMoves = (move*)malloc(sizeof(move));
 
     for (int a = 0; a < 8; a++) {
         for (int b = 0; b < 8; b++) {
@@ -437,39 +437,39 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
                 int len = *ind;
                 switch (Cur_side->PieceTypes[x][y]) {
                 case 'p':
-                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (len + 12));
+                    CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (len + 12));
                     *ind = len + PawnMoves(*Cur_side, *Opp_side, Pos, CandidateMoves+len);
-                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind+1));
+                    CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind+1));
                     break;
                 case 'Q':
-                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (len + 27));
+                    CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (len + 27));
                     *ind = len + QueenMoves(*Cur_side, *Opp_side, Pos, CandidateMoves+len);
-                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind+1));
+                    CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind+1));
                     break;
                 case 'N':
-                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (len + 8));
+                    CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (len + 8));
                     *ind = len + KnightMoves(*Cur_side, *Opp_side, Pos, CandidateMoves+len);
                     activity += ((float)(*ind - len) * dire) * 0.035f;
                     na += ((float)(*ind - len) * dire) * 0.035f; 
-                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind+1));
+                    CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind+1));
                     break;
                 case 'R':
-                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (len + 14));
+                    CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (len + 14));
                     *ind = len + RookMoves(*Cur_side, *Opp_side, Pos, CandidateMoves+len);
-                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind+1));
+                    CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind+1));
                     break;
                 case 'K':
-                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (len + 8));
+                    CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (len + 8));
                     *ind = len + KingMoves(*Cur_side, *Opp_side, Pos, CandidateMoves+len);
                     king_safety -= ((float)(*ind - len) * dire) * 0.00001f;
-                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind+1));
+                    CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind+1));
                     break;                                                                  
                 case 'B':
-                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (len + 13));
+                    CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (len + 13));
                     *ind = len + BishopMoves(*Cur_side, *Opp_side, Pos, CandidateMoves+len);
                     activity += ((float)(*ind - len) * dire) * 0.05f;
                     ba += ((float)(*ind - len) * dire) * 0.08f;
-                    CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind+1));
+                    CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind+1));
                     break;
                 default:
                     break;                                                                      
@@ -477,29 +477,29 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
             } else if (Sides[!turn].Pieces[x][y]) {
               switch (Cur_side->PieceTypes[x][y]) {                                                                                          
               case 'p':                                                                      
-                  BufMoves = realloc(BufMoves, sizeof(move) * (nind + 12));       
+                  BufMoves = (move*)realloc(BufMoves, sizeof(move) * (nind + 12));       
                   nind += PawnMoves(*Cur_side, *Opp_side, Pos, BufMoves + nind);              
                   break;                                                                                                                                 
               case 'Q':                                                                      
-                  BufMoves = realloc(BufMoves, sizeof(move) * (nind + 27));           
+                  BufMoves = (move*)realloc(BufMoves, sizeof(move) * (nind + 27));           
                   nind += QueenMoves(*Cur_side, *Opp_side, Pos, BufMoves+nind);                                                                             
                   break;                                                                     
               case 'N':                                                                      
-                  BufMoves = realloc(BufMoves, sizeof(move) * (nind + 8));     
+                  BufMoves = (move*)realloc(BufMoves, sizeof(move) * (nind + 8));     
                   nind += KnightMoves(*Cur_side, *Opp_side, Pos, BufMoves+nind);
                   activity += ((float)(nind - oind) * dire) * 0.035f;
                   break;                                                                     
               case 'R':                                                                      
-                  BufMoves = realloc(BufMoves, sizeof(move) * (nind + 14));   
+                  BufMoves = (move*)realloc(BufMoves, sizeof(move) * (nind + 14));   
                   nind += RookMoves(*Cur_side, *Opp_side, Pos, BufMoves+nind);         
                   break;                                                                     
               case 'B':                                                                      
-                  BufMoves = realloc(BufMoves, sizeof(move) * (nind + 14));         
+                  BufMoves = (move*)realloc(BufMoves, sizeof(move) * (nind + 14));         
                   nind += BishopMoves(*Cur_side, *Opp_side, Pos, BufMoves+nind);
                   activity += ((float)(nind - oind) * dire) * 0.08f;
                   break;
               case 'K':                                                           
-                  BufMoves = realloc(BufMoves, sizeof(move) * (nind + 8));       
+                  BufMoves = (move*)realloc(BufMoves, sizeof(move) * (nind + 8));       
                   nind += KingMoves(*Cur_side, *Opp_side, Pos, BufMoves+nind);
                   king_safety -= ((float)(nind - oind) * dire) * 0.00001f;
                   break;                                                          
@@ -511,13 +511,13 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
         }
     }
     }   
-       CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind + 3));
+       CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind + 3));
       bool CanSideCastle = CanCastle(Sides[turn], CandidateMoves, ind);
-      CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind+1));
+      CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind+1));
     
     free(BufMoves); BufMoves = NULL;
 
-    if (*ind > 0) {CandidateMoves = realloc(CandidateMoves, sizeof(move) * (*ind));}
+    if (*ind > 0) {CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind));}
 
     float wking_safety = KingSafety(WSide, WSide.KingPos, Bpieces);
     float bking_safety = KingSafety(BSide, BSide.KingPos, Wpieces);
@@ -580,14 +580,16 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
                 }                            
                 if (fabs(bufval) == 2000.0f) {
                   if ((bufval > 0 && turn) || (bufval < 0 && !turn)) {*BestMove = ChosenMove;}
-                  int bias = (bufval > 0) ? 1 : -1;
+                  int bias = (bufval > 0) ? 1 : -1; //reduces the value depending on how far away it is from
+                                                    //checkmate. This is to prevent the engine from instanly
+                                                    //resigning the moment it sees forced checkmate
                     BestLineVal = bufval - (50.0f * cur_depth * bias);
                     break;
                 }
 
                 int kx = Cur_side->KingPos[0]; int ky = Cur_side->KingPos[1];
                 if (Cur_side->Attacks[kx][ky]) {
-
+                    continue;
                 }
                  
                 if (cur_depth+1 < depth) {
