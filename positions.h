@@ -7,7 +7,7 @@
 
 char alphabet[] = "abcdefgh";
 
-#define depth 4
+#define depth 1
 int contr = 0;
 
 //This is going to tank performance, but I am desperate to see this engine working
@@ -154,7 +154,7 @@ float KingSafety(Side Cur_side, int KingPos[2], char* OppPieces) {
     float lx = fabs((float)kx - 3.5f) + 0.5f;
     float ly = fabs((float)ky - 3.5f) + 0.5f;    
 
-    float ChMaPower = -0.4f; //omg
+    float ChMaPower = 0.1f; //omg
     for (int ind = 0; ind < strlen(OppPieces); ind++) {
         switch (OppPieces[ind]) {
             case 'Q':
@@ -227,7 +227,7 @@ float KnightActivity(int KnightPos[2], Side Cur_side, Side Opp_side) {
 
     int conv_y = (Cur_side.direction == 1) ? y : 7 - y;
     int conv_x = (int)(fabs(3.5f - (float)x) + 0.5f);
-    activity += ((float)(5 - conv_x) * 0.4f) + (conv_y * 0.8f);
+    activity += ((float)(5 - conv_x) * 0.08f) + (conv_y * 0.075f);
 
     activity += (float)GetAPawn(x + 1, y, Cur_side) / 8.0;
     activity += (float)GetAPawn(x - 1, y, Cur_side) / 8.0f;
@@ -261,10 +261,10 @@ float RookActivity(int RookPos[2], Side Cur_side, Side Opp_side) {
     activity += GetAttackStren(Increment, RookPos, Cur_side);
     SeesOtherRook = SeesOtherRook || SeesPiece(Increment, RookPos, Cur_side);
 
-    activity *= 0.5;
+    activity *= 0.8;
 
     activity += (float)(ry == Opp_side.backrank + Opp_side.direction) * 0.001;
-    activity += (float)(SeesOtherRook) * 0.001;
+    activity += (float)(SeesOtherRook) * 0.01;
 
     return activity;
 
@@ -285,10 +285,10 @@ float BishopActivity(int BishopPos[2], Side Cur_side, Side Opp_side) {
 
      int conv_y = (int)(fabs(3.5f - (float)by) + 0.5f);
      int conv_x = (int)(fabs(3.5f - (float)bx) + 0.5f);
-     activity += ((float)(5 - conv_x)/16.0f) + (conv_y * 16.0f);
+     activity += ((float)(5 - conv_x) * 0.09f) + ((float)(5 - conv_y) * 0.09f);
 
      bool IsFianchettoed = conv_x == conv_y;
-     activity += (int)IsFianchettoed * 0.0001;
+     activity += (int)IsFianchettoed * 0.001;
 
      return activity;
     
@@ -311,12 +311,11 @@ float PawnActivity(int PawnPos[2], int dire, Side Opp_side) {
 
     float lx = fabs((float)x - 3.5f) + 0.5f;
     float ly = (IsPawnPassed(x,y,Opp_side)) ? (float)rel_y : 5.0f - (fabs((3.5f - (float)y)) + 0.5f);
-    //printf("h: %d %f %d\n", rel_y, ly, y);
     float b = (ly/lx);
     return b;
 }
 
-move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int * piece_count, bool turn, int cur_depth) {
+move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int * piece_count, bool turn) {
 
     move * CandidateMoves = (move*)malloc(sizeof(move));
     move * BufMoves = (move*)malloc(sizeof(move));
@@ -333,10 +332,6 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
     float bvalue = sum_material(Bpieces, piece_count);
 
     if (wvalue < 200.0f) {
-      move WLast = WSide.LastMove; move BLast = BSide.LastMove;
-      //printf("%c-> %c%d (%c%d): w\n",WLast.piece, alphabet[WLast.x], WLast.y + 1, alphabet[WLast.ox], WLast.oy + 1);
-      //printf("%c-> %c%d (%c%d): b\n",BLast.piece, alphabet[BLast.x], BLast.y + 1, alphabet[BLast.ox], BLast.oy + 1);
-      //ViewBoard(CurBoard);  
       *ind = 0;
         *eval_buf = -2000.0f;
         return CandidateMoves;
@@ -373,6 +368,8 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
         for (int b = 0; b < 8; b++) {
             Cur_side->Attacks[a][b] = false;
             Opp_side->Attacks[a][b] = false;
+            Cur_side->LVA[a][b] = 0.0f;
+            Opp_side->LVA[a][b] = 0.0f;
         }
     }
 
@@ -381,12 +378,10 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
 
     float king_safety = 0.0f;
 
-    unsigned int x = 4;
-    unsigned int y = 4;
     for (int a = 0; a < 8; a++) {
-        x = SquareOrder[a];
+        unsigned int x = SquareOrder[a];
         for (int b = 0; b < 8; b++) {
-            y = SquareOrder[b];
+            unsigned int y = SquareOrder[b];
 
             int Pos[2] = {x,y};
             int oind = nind;
@@ -510,9 +505,35 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
              
         }
     }
-    }   
-       CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind + 3));
-      bool CanSideCastle = CanCastle(Sides[turn], CandidateMoves, ind);
+    }
+    
+    for (int a = 0; a < 8; a++) {
+        for (int b = 0; b < 8; b++) {
+
+            if (WSide.Pieces[a][b]) {
+                dire = 1.0f;
+                Cur_side = &WSide;
+                Opp_side = &BSide;
+            }
+            else if (BSide.Pieces[a][b]) {
+                dire = -1.0f;
+                Cur_side = &BSide;
+                Opp_side = &WSide;
+            }
+            
+            float pieceval = GetPieceValue(Cur_side->PieceTypes[a][b]);
+            float leastvalue = Cur_side->LVA[a][b];
+
+            bool IsHanging = Cur_side->Attacks[a][b] && !Opp_side->Attacks[a][b];
+
+            if (leastvalue < pieceval && leastvalue != 0.0f) {
+                material -= (pieceval - leastvalue) * dire;
+            } else if (IsHanging) {material -= pieceval * dire;}
+        }
+    }
+
+      CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind + 3));
+      bool CanSideCastle = CanCastle(Sides[turn], CandidateMoves+*ind, ind);
       CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind+1));
     
     free(BufMoves); BufMoves = NULL;
@@ -527,10 +548,6 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
     free(Wpieces); Wpieces = NULL; 
     free(Bpieces); Bpieces = NULL;
 
-    if (cur_depth == -10) {
-    printf("a: %f k: %f s: %f m: %f\n", activity, king_safety, structure, material);
-    printf("activity - na: %f ba: %f pa: %f ra: %f \n", na, ba, pa, ra);
-    }
     *eval_buf = activity + king_safety + structure + material;
 
     return CandidateMoves;
@@ -540,8 +557,7 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
 
 
 float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth, bool turn, move * BestMove, float alpha, float beta) {
-    contr++;
-    float BestLineVal = 0.0f;
+    float BestLineVal = 2000.0f;
 
     Side BufW = CurBoard.WSide;
     Side BufB = CurBoard.BSide;
@@ -562,9 +578,11 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
                 move ChosenMove = CandidateMoves[ind];
                 int PiecePos[2] = {ChosenMove.ox, ChosenMove.oy};
                 if (!DoesSquareExist(ChosenMove.x, ChosenMove.y) || !(DoesSquareExist(ChosenMove.ox, ChosenMove.oy))) {
-                  //printf("%c-> %c%d (%c%d): error\n",ChosenMove.piece, alphabet[ChosenMove.x], ChosenMove.y + 1, alphabet[ChosenMove.ox], ChosenMove.oy + 1);
+                  printf("%c-> %c%d (%c%d): error\n",ChosenMove.piece, alphabet[ChosenMove.x], ChosenMove.y + 1, alphabet[ChosenMove.ox], ChosenMove.oy + 1);
                   continue;}
                 MakeAMove(ChosenMove, Cur_side, Opp_side);
+
+                contr++;
                 
                 move BestMoveBuf;
 
@@ -572,12 +590,13 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
                 int buflen = 0;
                 Board TempBoard = {BufW, BufB};
                 int buf = 0;
-                move * BufMoves = EvaluateSpecificPosition(TempBoard, &bufval, &buflen, &buf, !turn, cur_depth);
+                move * BufMoves = EvaluateSpecificPosition(TempBoard, &bufval, &buflen, &buf, !turn);
 
                 if (ind == 0) {
                     BestLineVal = bufval;
-                    *BestMove = ChosenMove;                             
-                }                            
+                    *BestMove = ChosenMove;                          
+                }                  
+
                 if (fabs(bufval) == 2000.0f) {
                   if ((bufval > 0 && turn) || (bufval < 0 && !turn)) {*BestMove = ChosenMove;}
                   int bias = (bufval > 0) ? 1 : -1; //reduces the value depending on how far away it is from
@@ -589,18 +608,20 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
 
                 int kx = Cur_side->KingPos[0]; int ky = Cur_side->KingPos[1];
                 if (Cur_side->Attacks[kx][ky]) {
+                    if (ind == 0) {
+                        BestLineVal = 2000.0f * Opp_side->direction;
+                    }
                     continue;
                 }
                  
                 if (cur_depth+1 < depth) {
                   bufval = JudgeABranch(TempBoard, BufMoves, buflen, cur_depth+1, !turn, &BestMoveBuf, alphabuf, betabuf);
-                  
+                  if (ind == 0) {
+                        BestLineVal = bufval;
+                    }
                 }
                      //Behold, recursive functions!
                else {free(BufMoves); BufMoves = NULL;}
-                if (cur_depth == 0) {
-                    //printf("%c-> %c%d (%c%d): %f\n",ChosenMove.piece, alphabet[ChosenMove.x], ChosenMove.y + 1, alphabet[ChosenMove.ox], ChosenMove.oy + 1, bufval);
-                } 
 
                 bool IsBestMove = (turn == white) ? bufval > BestLineVal : bufval < BestLineVal;
                 if (IsBestMove) {
@@ -608,10 +629,13 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
                     *BestMove = ChosenMove;
                 }
 
-                if (alphabuf < bufval) {alphabuf = bufval;}
-                else {if (betabuf > bufval) {betabuf = bufval;}}
-
-                if (betabuf <= alphabuf) {break;}
+                if (turn) {
+                    if (alphabuf < bufval) {alphabuf = bufval;}
+                    if (betabuf <= alphabuf) {break;}
+                } else {
+                    {if (betabuf > bufval) {betabuf = bufval;}}
+                    if (betabuf <= alphabuf) {break;}
+                }
 
                 *Cur_side = CurBoard.WSide;
                 *Opp_side = CurBoard.BSide;
@@ -638,7 +662,7 @@ float Evaluate(Board CurBoard, move * BestMove, bool turn) {
     float alpha = -2000.0f; float beta = 2000.0f;
 
     int piece_count = 0;
-    move * CandidateMoves = EvaluateSpecificPosition(CurBoard, &CurEvaluation, &len, &piece_count, turn, -10);
+    move * CandidateMoves = EvaluateSpecificPosition(CurBoard, &CurEvaluation, &len, &piece_count, turn);
 
     int dif = (32 - piece_count);
     cur_depth -= (dif - (dif % 8))/8;
@@ -646,6 +670,7 @@ float Evaluate(Board CurBoard, move * BestMove, bool turn) {
 
     CurEvaluation = JudgeABranch(CurBoard, CandidateMoves, len, cur_depth, turn, BestMove, alpha, beta);
     printf("Positions analyzed: %d\n", contr);
+    contr = 0;
 
     return CurEvaluation;
 

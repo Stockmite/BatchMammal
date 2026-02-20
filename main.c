@@ -35,20 +35,21 @@ int ConvertChar(char c) {
 
 void Initialize_position(Side * S, int br, int direction, bool which_side) {
 
+    S->Which_side = which_side;
+    S->direction = direction;
+    S->backrank = br;
+    S->HasAFrookMoved = false;
+    S->HasHFrookMoved = false;
+    S->HasKingMoved = false;
+
     for (int x = 0; x < 8; x++) {
         S->PawnFiles[x] = 0;
         for (int y = 0; y < 8; y++) {
 
-            S->Attacks[x][y] = 0.0f;
+            S->Attacks[x][y] = false;
             S->Pieces[x][y] = false;
             S->PieceTypes[x][y] = 'a';
-            S->Which_side = which_side;
-            S->direction = direction;
-            S->backrank = br;
-            S->HasAFrookMoved = false;
-            S->HasHFrookMoved = false;
-            S->HasKingMoved = true;
-
+            S->LVA[x][y] = 0.0f;
         }
 
     }
@@ -145,34 +146,18 @@ int main() {
 
     while (MainBoard.BSide.KingPos[0] != -1 && MainBoard.WSide.KingPos[0] != -1) {
 
-        //char* str = malloc(8);
-
-        //printf("Make a Move!: ");
-        //scanf("%s", str);
-        //str = realloc(str, (size_t)strlen(str));
-        //fflush(stdin);
-
-        //PlayMove(str, &MainBoard.WSide, &MainBoard.BSide);
-        //PlayMove("pd4d2", &MainBoard.WSide, &MainBoard.BSide);
-        //ViewBoard(MainBoard);
-        //free(str); str = NULL;
-
-        //eval = Evaluate(MainBoard, &BestMove, black);
-        //printf("The evaluation is: %f\n", eval);
-        //printf("I'll play: %c-> %c%d (%c%d)\n", BestMove.piece, alphabet[BestMove.x], BestMove.y + 1, alphabet[BestMove.ox], BestMove.oy + 1);
-        //MakeAMove(BestMove, &MainBoard.BSide, &MainBoard.WSide);                                                                              
-
-        ViewBoard(MainBoard);
-
         eval = Evaluate(MainBoard, &BestMove, white);
         printf("The evaluation is: %f\n", eval);
         printf("I'll play: %c-> %c%d (%c%d)\n", BestMove.piece, alphabet[BestMove.x], BestMove.y + 1, alphabet[BestMove.ox], BestMove.oy + 1);
         MakeAMove(BestMove, &MainBoard.WSide, &MainBoard.BSide);
 
-        eval = Evaluate(MainBoard, &BestMove, black);                                                                                           
+        eval = Evaluate(MainBoard, &BestMove, black);
         printf("The evaluation is: %f\n", eval);
         printf("I'll play: %c-> %c%d (%c%d)\n", BestMove.piece, alphabet[BestMove.x], BestMove.y + 1, alphabet[BestMove.ox], BestMove.oy + 1);
-        MakeAMove(BestMove, &MainBoard.BSide, &MainBoard.WSide);
+        MakeAMove(BestMove, &MainBoard.BSide, &MainBoard.WSide);                                                                              
+
+        ViewBoard(MainBoard);
+
 
     }
 }

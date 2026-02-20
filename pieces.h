@@ -28,7 +28,8 @@ typedef struct {
     bool HasAFrookMoved;
     bool HasHFrookMoved;
     bool Which_side;
-    float Attacks[8][8];
+    bool Attacks[8][8];
+    float LVA[8][8];
     int PawnFiles[8];
     move LastMove;
     int KingPos[2];
@@ -99,9 +100,10 @@ void RegisterMove(int x, int y, int PiecePos[2], move * Buff, int * ind, Side * 
 
     int dind = *ind;
     
-    if (y == Opp_side->backrank) {
-        Opp_side->Attacks[x][y] = true;
-        if (piece=='p') {
+    if (y == Opp_side->backrank && piece=='p') {
+            Opp_side->Attacks[x][y] = true;
+            Opp_side->LVA[x][y] = Min(Opp_side->LVA[x][y], GetPieceValue('p'));
+
             char Promotions[] = "QRBN";
             for (int a = 0; a < strlen(Promotions); a++) {
                 Buff[dind+a].x = x; Buff[dind+a].y = y;
@@ -111,10 +113,10 @@ void RegisterMove(int x, int y, int PiecePos[2], move * Buff, int * ind, Side * 
                 *ind = *ind + 1;
             }
             return;
-        }
     }
 
     Opp_side->Attacks[x][y] = true;
+    Opp_side->LVA[x][y] = Min(Opp_side->LVA[x][y], GetPieceValue(piece));
     Buff[dind].x = x; Buff[dind].y = y;
     Buff[dind].ox = ox; Buff[dind].oy = oy;
     Buff[dind].promotion = 'a';
@@ -342,7 +344,7 @@ bool IsBackRankAttacked(int rx, int kx, Side Cur_side) {
       check = check || Cur_side.Attacks[ind][backrank];
     }
     for (int ind = rx+inc; ind != kx; ind += inc) {   
-      check = check || Cur_side.PieceTypes[ind][backrank] == 'a';
+      check = check || Cur_side.PieceTypes[ind][backrank] != 'a';
     }
 
     return check;
@@ -354,30 +356,36 @@ bool CanCastle(Side Cur_side, move * MoveBuf, int * ind) {
     bool check = false;
     int backrank = Cur_side.backrank;
 
-    if (Cur_side.HasKingMoved) {return check;}
+    bool canshortcastle = false; bool canlongcastle = false;
+
+    if (Cur_side.HasKingMoved) {;return check;}
 
     int rx = 0; int kx = Cur_side.KingPos[0];
     if (!Cur_side.HasHFrookMoved) {
       rx = 7;
-      bool canshortcastle = !IsBackRankAttacked(rx, kx, Cur_side);
-      rx = 0;
-      bool canlongcastle = !IsBackRankAttacked(rx, kx, Cur_side);
+      canshortcastle = !IsBackRankAttacked(rx, kx, Cur_side);
       if (canshortcastle) {
+
           move ShortCastle; ShortCastle.promotion = 'K';
           ShortCastle.piece = 'K'; ShortCastle.x = 6;
           ShortCastle.y = backrank; ShortCastle.oy = backrank;
           ShortCastle.ox = kx; MoveBuf[len] = ShortCastle; len++;
       }
-      if (canlongcastle) {
+    }
+    if (!Cur_side.HasAFrookMoved) {
+        rx = 0;
+        canlongcastle = !IsBackRankAttacked(rx, kx, Cur_side);
+        if (canlongcastle) {
           move LongCastle; LongCastle.promotion = 'K';
           LongCastle.piece = 'K'; LongCastle.x = 3;
           LongCastle.y = backrank; LongCastle.oy = backrank;
           LongCastle.ox = kx; MoveBuf[len] = LongCastle;
       }
-
-      *ind = *ind + canshortcastle + canlongcastle;
-      return canshortcastle || canlongcastle;
     }
+
+    *ind = *ind + (int)canshortcastle + (int)canlongcastle;
+
+    return canshortcastle || canlongcastle;
 
     return false;
 
@@ -445,8 +453,6 @@ void MakeAMove(move Move, Side * Cur_side, Side * Opp_side) {
     int OgOtherPiece[2];
     int nx = Move.x; int ny = Move.y;
     char piece = Move.piece;
-
-    //printf("move: %c%c%d (%c%d)\n", piece, alphabet[nx], ny+1, alphabet[ox], oy+1);
 
     Cur_side->LastMove = Move;
 
