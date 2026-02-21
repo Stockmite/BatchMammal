@@ -149,14 +149,20 @@ int main() {
         eval = Evaluate(MainBoard, &BestMove, white);
         printf("The evaluation is: %f\n", eval);
         printf("I'll play: %c-> %c%d (%c%d)\n", BestMove.piece, alphabet[BestMove.x], BestMove.y + 1, alphabet[BestMove.ox], BestMove.oy + 1);
-        MakeAMove(BestMove, &MainBoard.WSide, &MainBoard.BSide);
-
-        eval = Evaluate(MainBoard, &BestMove, black);
-        printf("The evaluation is: %f\n", eval);
-        printf("I'll play: %c-> %c%d (%c%d)\n", BestMove.piece, alphabet[BestMove.x], BestMove.y + 1, alphabet[BestMove.ox], BestMove.oy + 1);
-        MakeAMove(BestMove, &MainBoard.BSide, &MainBoard.WSide);                                                                              
+        MakeAMove(BestMove, &MainBoard.WSide, &MainBoard.BSide);                                                                           
 
         ViewBoard(MainBoard);
+
+        char* str = malloc(8);
+
+        printf("Make a Move!: ");
+        scanf("%s", str);
+        str = realloc(str, (size_t)strlen(str));
+        fflush(stdin);
+
+        PlayMove(str, &MainBoard.BSide, &MainBoard.WSide);
+        ViewBoard(MainBoard);
+        free(str); str = NULL;
 
 
     }

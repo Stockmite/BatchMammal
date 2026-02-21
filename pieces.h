@@ -352,7 +352,7 @@ bool IsBackRankAttacked(int rx, int kx, Side Cur_side) {
 
 bool CanCastle(Side Cur_side, move * MoveBuf, int * ind) {
     
-    int len = *ind;
+    int len = 0;
     bool check = false;
     int backrank = Cur_side.backrank;
 
@@ -521,16 +521,16 @@ void MakeAMove(move Move, Side * Cur_side, Side * Opp_side) {
 
     }
     //This is really stupid but it'll work for now
-    if (!Cur_side->HasAFrookMoved && !Cur_side->Pieces[0][0]) {
+    if (!Cur_side->HasAFrookMoved && !Cur_side->Pieces[0][Cur_side->backrank]) {
       Cur_side->HasAFrookMoved = true;
     }
-    if (!Cur_side->HasHFrookMoved && !Cur_side->Pieces[7][0]) {
+    if (!Cur_side->HasHFrookMoved && !Cur_side->Pieces[7][Cur_side->backrank]) {
       Cur_side->HasHFrookMoved = true;
     }                                                         
-    if (!Opp_side->HasAFrookMoved && !Opp_side->Pieces[0][7]) {
+    if (!Opp_side->HasAFrookMoved && !Opp_side->Pieces[0][Opp_side->backrank]) {
       Opp_side->HasAFrookMoved = true;
     }
-    if (!Opp_side->HasHFrookMoved && !Opp_side->Pieces[7][7]) {
+    if (!Opp_side->HasHFrookMoved && !Opp_side->Pieces[7][Opp_side->backrank]) {
       Opp_side->HasHFrookMoved = true;
     }                                                         
 }

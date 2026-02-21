@@ -7,7 +7,7 @@
 
 char alphabet[] = "abcdefgh";
 
-#define depth 1
+#define depth 6
 int contr = 0;
 
 //This is going to tank performance, but I am desperate to see this engine working
@@ -154,7 +154,7 @@ float KingSafety(Side Cur_side, int KingPos[2], char* OppPieces) {
     float lx = fabs((float)kx - 3.5f) + 0.5f;
     float ly = fabs((float)ky - 3.5f) + 0.5f;    
 
-    float ChMaPower = 0.1f; //omg
+    float ChMaPower = -0.7f; //omg
     for (int ind = 0; ind < strlen(OppPieces); ind++) {
         switch (OppPieces[ind]) {
             case 'Q':
@@ -532,9 +532,9 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
         }
     }
 
-      CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind + 3));
+      CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind + 5));
       bool CanSideCastle = CanCastle(Sides[turn], CandidateMoves+*ind, ind);
-      CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind+1));
+      CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind+2));
     
     free(BufMoves); BufMoves = NULL;
 
