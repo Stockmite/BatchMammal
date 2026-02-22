@@ -7,10 +7,33 @@
 
 char alphabet[] = "abcdefgh";
 
-#define depth 6
+#define depth 8
 int contr = 0;
 
-//This is going to tank performance, but I am desperate to see this engine working
+typedef move * MoveList;
+typedef struct Node {
+    move TheMove;
+    struct Node * Ptr;
+} MoveNode;
+
+MoveList OrderMoves(MoveList UnorderedMoves, Board CurBoard, int len) {
+
+    MoveList OrderedMoves = malloc(sizeof(MoveList) * len);
+    int ListInd = 0;
+
+    MoveNode FirstCaptureNode; FirstCaptureNode.Ptr = NULL;
+    MoveNode * CurCapNode = &FirstCaptureNode;
+    MoveNode FirstRegularMoveNode; FirstRegularMoveNode.Ptr = NULL;
+    MoveNode * CurRegNode = &FirstRegularMoveNode;
+    MoveNode FirstSaccNode; FirstSaccNode.Ptr = NULL;
+    MoveNode * CurSaccNode = &FirstSaccNode;
+
+    for (int ind = 0; ind < len; ind++) {
+        
+    }
+
+}
+
 float GetAttackStren(int Increment[2], int Pos[2], Side SSide) {
     int x = Pos[0]; int y = Pos[1];
     int buf_x = x + Increment[0]; int buf_y = y + Increment[1];
