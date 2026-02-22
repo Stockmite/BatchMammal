@@ -11,25 +11,15 @@ char alphabet[] = "abcdefgh";
 int contr = 0;
 
 typedef move * MoveList;
-typedef struct Node {
-    move TheMove;
-    struct Node * Ptr;
-} MoveNode;
 
-MoveList OrderMoves(MoveList UnorderedMoves, Board CurBoard, int len) {
+void GetSideFromSquare(int x, int y, Side * Cur_side, Side * Opp_side, Board CurBoard) {
 
-    MoveList OrderedMoves = malloc(sizeof(MoveList) * len);
-    int ListInd = 0;
-
-    MoveNode FirstCaptureNode; FirstCaptureNode.Ptr = NULL;
-    MoveNode * CurCapNode = &FirstCaptureNode;
-    MoveNode FirstRegularMoveNode; FirstRegularMoveNode.Ptr = NULL;
-    MoveNode * CurRegNode = &FirstRegularMoveNode;
-    MoveNode FirstSaccNode; FirstSaccNode.Ptr = NULL;
-    MoveNode * CurSaccNode = &FirstSaccNode;
-
-    for (int ind = 0; ind < len; ind++) {
-        
+    if (CurBoard.WSide.Pieces[x][y]) {
+        *Cur_side = CurBoard.WSide;
+        *Opp_side = CurBoard.BSide;
+    } else if (CurBoard.BSide.Pieces[x][y]) {
+        *Cur_side = CurBoard.BSide;
+        *Opp_side = CurBoard.WSide;
     }
 
 }
