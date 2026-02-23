@@ -7,7 +7,7 @@
 
 char alphabet[] = "abcdefgh";
 
-#define depth 8
+#define depth 4
 int contr = 0;
 
 typedef move * MoveList;
@@ -38,8 +38,61 @@ MoveList OrderMoves(MoveList UnorderedMoves, int len, Board CurBoard) {
 
         Side Cur_side; Side Opp_side;
         GetSideFromSquare(CurMove.ox, CurMove.oy, &Cur_side, &Opp_side, CurBoard);
+
         char piece = CurMove.piece;
+        char en_piece = Cur_side.PieceTypes[nx][ny];
+        bool IsMoveUnsafe = Cur_side.Attacks[nx][ny];
+
+        if (en_piece != 'a') {
+
+            if (IsMoveUnsafe) {
+                len1++;
+                Captures = realloc(Captures, sizeof(move)*len1);
+                Captures[len1-1] = CurMove; continue;
+            } else {
+                if (GetPieceValue(en_piece) > GetPieceValue(piece)) {
+                    len1++;
+                    Captures = realloc(Captures, sizeof(move)*len1);
+                    Captures[len1-1] = CurMove; continue;
+                } else if (GetPieceValue(en_piece) < GetPieceValue(piece)) {
+                    len3++;
+                    Sacrifices = realloc(Sacrifices, sizeof(move)*len3);
+                    Sacrifices[len3-1] = CurMove; continue;
+                }
+
+            }
+
+
+        }
+
+        if (IsMoveUnsafe) {
+            len3++;
+            Sacrifices = realloc(Sacrifices, sizeof(move)*len3);
+            Sacrifices[len3-1] = CurMove; continue;
+        }
+
+        len2++;
+        RegularMoves = realloc(RegularMoves, sizeof(move)*len2);
+        RegularMoves[len2-1] = CurMove; continue;
     }
+
+    for (int ind1 = 0; ind1 < len1; ind1++) {
+        OrderedMoves[ind1] = Captures[ind1];
+    }
+
+    for (int ind2 = 0; ind2 < len2; ind2++) {
+        OrderedMoves[len1+ind2] = RegularMoves[ind2];
+    }
+
+    for (int ind3 = 0; ind3 < len3; ind3++) {
+        OrderedMoves[len1+len2+ind3] = Sacrifices[ind3];
+    }
+
+    free(Captures); Captures = NULL;
+    free(RegularMoves); RegularMoves = NULL;
+    free(Sacrifices); Sacrifices = NULL;
+
+    return OrderedMoves;
 
 }
 
@@ -582,7 +635,11 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
 
     *eval_buf = activity + king_safety + structure + material;
 
-    return CandidateMoves;
+    MoveList OrderedMoves = OrderMoves(CandidateMoves, *ind, CurBoard);
+
+    free(CandidateMoves); CandidateMoves = NULL;
+
+    return OrderedMoves;
     
 }
 
