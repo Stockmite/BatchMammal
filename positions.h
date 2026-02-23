@@ -24,6 +24,25 @@ void GetSideFromSquare(int x, int y, Side * Cur_side, Side * Opp_side, Board Cur
 
 }
 
+MoveList OrderMoves(MoveList UnorderedMoves, int len, Board CurBoard) {
+
+    MoveList OrderedMoves = malloc(sizeof(move)*len);
+
+    MoveList Captures = malloc(sizeof(move)); int len1 = 0;
+    MoveList RegularMoves = malloc(sizeof(move)); int len2 = 0;
+    MoveList Sacrifices = malloc(sizeof(move)); int len3 = 0;
+
+    for (int ind = 0; ind < len; ind++) {
+        move CurMove = UnorderedMoves[ind];
+        int nx = CurMove.x; int ny = CurMove.y;
+
+        Side Cur_side; Side Opp_side;
+        GetSideFromSquare(CurMove.ox, CurMove.oy, &Cur_side, &Opp_side, CurBoard);
+        char piece = CurMove.piece;
+    }
+
+}
+
 float GetAttackStren(int Increment[2], int Pos[2], Side SSide) {
     int x = Pos[0]; int y = Pos[1];
     int buf_x = x + Increment[0]; int buf_y = y + Increment[1];
