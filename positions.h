@@ -100,19 +100,13 @@ float GetAttackStren(int Increment[2], int Pos[2], Side SSide) {
     int x = Pos[0]; int y = Pos[1];
     int buf_x = x + Increment[0]; int buf_y = y + Increment[1];
 
-    int pCount = 0;
-
     float strength = 0.0f;
     while (DoesSquareExist(buf_x, buf_y)) {
-        if (SSide.PieceTypes[buf_x][buf_y] != 'a') { 
-            if (SSide.PieceTypes[buf_x][buf_y] != 'p') {
-              strength -= 0.02f;
-              buf_x += Increment[0]; buf_y += Increment[1]; continue;
-            }
+        if (SSide.PieceTypes[buf_x][buf_y] == 'p') {
+            strength -= 0.1f;
+            if (strength == -0.2f) {return strength;}
+        } 
 
-            if (pCount == 1) {return -0.2f;}
-            pCount++; strength -= 0.1f;
-        }
         buf_x += Increment[0]; buf_y += Increment[1];
     }
 
@@ -157,24 +151,6 @@ void ViewBoard(Board CurBoard) {
     for (int y=0; y<8; y++) {
         for (int x=0; x<8; x++) {
             printf("%c ", CurBoard.BSide.PieceTypes[x][7 - y]);
-        }
-        printf("\n");
-    }
-
-    printf("\n \n \n");
-
-    for (int y=0; y<8; y++) {
-        for (int x=0; x<8; x++) {
-            printf("%d ", CurBoard.BSide.Pieces[x][7 - y]);
-        }
-        printf("\n");
-    }
-
-    printf("\n \n \n");
-
-    for (int y=0; y<8; y++) {
-        for (int x=0; x<8; x++) {
-            printf("%d ", CurBoard.WSide.Pieces[x][7 - y]);
         }
         printf("\n");
     }
@@ -271,7 +247,7 @@ float KingSafety(Side Cur_side, int KingPos[2], char* OppPieces) {
         }
     }
     
-    float xDebuff = lx * 0.25; int yDebuff = ly * 0.3;
+    float xDebuff = lx * 0.4; int yDebuff = ly * 0.6;
 
     safety += (xDebuff + yDebuff) * ChMaPower;
 
@@ -397,7 +373,7 @@ float PawnActivity(int PawnPos[2], int dire, Side Opp_side) {
     float lx = fabs((float)x - 3.5f) + 0.5f;
     float ly = (IsPawnPassed(x,y,Opp_side)) ? (float)rel_y : 5.0f - (fabs((3.5f - (float)y)) + 0.5f);
     float b = (ly/lx);
-    return b;
+    return b / 1.4f;
 }
 
 move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int * piece_count, bool turn) {
@@ -666,6 +642,7 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
 
                 move ChosenMove = CandidateMoves[ind];
                 int PiecePos[2] = {ChosenMove.ox, ChosenMove.oy};
+
                 if (!DoesSquareExist(ChosenMove.x, ChosenMove.y) || !(DoesSquareExist(ChosenMove.ox, ChosenMove.oy))) {
                   printf("%c-> %c%d (%c%d): error\n",ChosenMove.piece, alphabet[ChosenMove.x], ChosenMove.y + 1, alphabet[ChosenMove.ox], ChosenMove.oy + 1);
                   continue;}
