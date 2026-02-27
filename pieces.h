@@ -189,21 +189,21 @@ void DestroyPawn(int x, Side SSide) {
     SSide.PawnFiles[x] -= 1;
 }
 
-int GetAttack(int pos[2], Side Cur_side, Side Opp_side, int Increment[2], move * Squares, int control) {
+int GetAttack(int pos[2], Side* Cur_side, Side* Opp_side, int Increment[2], move * Squares, int control) {
 
     int x = pos[0]; int y = pos[1];
     int buf_x = x; int buf_y = y;
     int control_buf = control;
-    char piece = Cur_side.PieceTypes[x][y];
+    char piece = Cur_side->PieceTypes[x][y];
 
     while (true) {
 
         buf_x += Increment[0]; buf_y += Increment[1];
-        bool enemy_piece = Opp_side.Pieces[buf_x][buf_y];
+        bool enemy_piece = Opp_side->Pieces[buf_x][buf_y];
 
-        if (!DoesSquareExist(buf_x, buf_y) || Cur_side.Pieces[buf_x][buf_y]) {break;}
+        if (!DoesSquareExist(buf_x, buf_y) || Cur_side->Pieces[buf_x][buf_y]) {break;}
 
-        RegisterMove(buf_x, buf_y, pos, Squares, &control_buf, &Opp_side, piece);
+        RegisterMove(buf_x, buf_y, pos, Squares, &control_buf, Opp_side, piece);
         if (enemy_piece) {break;}
 
     }
@@ -245,46 +245,46 @@ void Destroy_Piece(Side * Cur_side, Side * Opp_side, int piecePos[2]) {
 
 }
 
-int PawnMoves(Side Cur_side, Side Opp_side, int PawnPos[2], move * Moves) {
+int PawnMoves(Side * Cur_side, Side * Opp_side, int PawnPos[2], move * Moves) {
     //Behold: if statements!
     int count = 0;
     int x = PawnPos[0]; int y = PawnPos[1];
-    int fileIncrement = Cur_side.direction;
-    int PawnWall = Cur_side.backrank + fileIncrement;
+    int fileIncrement = Cur_side->direction;
+    int PawnWall = Cur_side->backrank + fileIncrement;
     int new_y = y + fileIncrement;
 
-    int poscap1 = Opp_side.Pieces[x + 1][new_y];
-    int poscap2 = Opp_side.Pieces[x - 1][new_y];
+    int poscap1 = Opp_side->Pieces[x + 1][new_y];
+    int poscap2 = Opp_side->Pieces[x - 1][new_y];
 
     int NewPos[2] = {x, new_y};
 
     int new_y2 = new_y + fileIncrement;
-    if (y==PawnWall && !IsThereAPiece(Cur_side, Opp_side, x, new_y2) && !IsThereAPiece(Cur_side, Opp_side, x, new_y)) {
-        RegisterMove(x, new_y2, PawnPos, Moves, &count, &Opp_side, 'p');
+    if (y==PawnWall && !IsThereAPiece(*Cur_side, *Opp_side, x, new_y2) && !IsThereAPiece(*Cur_side, *Opp_side, x, new_y)) {
+        RegisterMove(x, new_y2, PawnPos, Moves, &count, Opp_side, 'p');
     }
 
-    if (!IsThereAPiece(Cur_side, Opp_side, x, new_y)) {
-        RegisterMove(x, new_y, PawnPos, Moves, &count, &Opp_side, 'p');
+    if (!IsThereAPiece(*Cur_side, *Opp_side, x, new_y)) {
+        RegisterMove(x, new_y, PawnPos, Moves, &count, Opp_side, 'p');
     }
 
     if (poscap1) {
-        RegisterMove(x + 1, new_y, PawnPos, Moves, &count, &Opp_side, 'p');
+        RegisterMove(x + 1, new_y, PawnPos, Moves, &count, Opp_side, 'p');
     }
     if (poscap2) {
-        RegisterMove(x - 1, new_y, PawnPos, Moves, &count, &Opp_side, 'p');
+        RegisterMove(x - 1, new_y, PawnPos, Moves, &count, Opp_side, 'p');
     }
     
-    int rec_x = Opp_side.LastMove.x; int rec_y = Opp_side.LastMove.y;
-    int dify = abs(rec_y - Opp_side.LastMove.oy); int difx = abs(rec_x - x);
-    if (rec_y == y && Opp_side.PieceTypes[rec_x][rec_y] == 'p' && dify == 2 && difx == 1) {
-        RegisterMove(rec_x, rec_y + fileIncrement, PawnPos, Moves, &count, &Opp_side, 'p');
+    int rec_x = Opp_side->LastMove.x; int rec_y = Opp_side->LastMove.y;
+    int dify = abs(rec_y - Opp_side->LastMove.oy); int difx = abs(rec_x - x);
+    if (rec_y == y && Opp_side->PieceTypes[rec_x][rec_y] == 'p' && dify == 2 && difx == 1) {
+        RegisterMove(rec_x, rec_y + fileIncrement, PawnPos, Moves, &count, Opp_side, 'p');
     }
 
     return count;
 
 }
 
-int KnightMoves(Side Cur_side, Side Opp_side, int KnightPos[2], move * Moves) {
+int KnightMoves(Side * Cur_side, Side * Opp_side, int KnightPos[2], move * Moves) {
 
     int x = KnightPos[0]; int y = KnightPos[1];
 
@@ -294,14 +294,14 @@ int KnightMoves(Side Cur_side, Side Opp_side, int KnightPos[2], move * Moves) {
                 int x1 = x+a; int x2 = x+b;
                 int y1 = y+b; int y2 = y+a;
 
-                bool enemy_piece1 = Opp_side.Pieces[x1][y1];
-                bool enemy_piece2 = Opp_side.Pieces[x2][y2];
+                bool enemy_piece1 = Opp_side->Pieces[x1][y1];
+                bool enemy_piece2 = Opp_side->Pieces[x2][y2];
 
-                if (DoesSquareExist(x1, y1) && (!Cur_side.Pieces[x1][y1] || enemy_piece1)) {
-                    RegisterMove(x1, y1, KnightPos, Moves, &count, &Opp_side, 'N');
+                if (DoesSquareExist(x1, y1) && (!Cur_side->Pieces[x1][y1] || enemy_piece1)) {
+                    RegisterMove(x1, y1, KnightPos, Moves, &count, Opp_side, 'N');
                 }
-                if (DoesSquareExist(x2, y2) && (!Cur_side.Pieces[x2][y2] || enemy_piece2)) {
-                    RegisterMove(x2, y2, KnightPos, Moves, &count, &Opp_side, 'N');
+                if (DoesSquareExist(x2, y2) && (!Cur_side->Pieces[x2][y2] || enemy_piece2)) {
+                    RegisterMove(x2, y2, KnightPos, Moves, &count, Opp_side, 'N');
                 }
             }
         }
@@ -310,7 +310,7 @@ int KnightMoves(Side Cur_side, Side Opp_side, int KnightPos[2], move * Moves) {
 
 }
 
-int KingMoves(Side Cur_side, Side Opp_side, int KingPos[2], move * Moves) {
+int KingMoves(Side *Cur_side, Side *Opp_side, int KingPos[2], move * Moves) {
 
     can_castle = 0.0f;
 
@@ -321,12 +321,12 @@ int KingMoves(Side Cur_side, Side Opp_side, int KingPos[2], move * Moves) {
         for (int b = -1; b < 2; b++) {
             int new_x = x+a; int new_y =y+b;
             bool does_square_exist = DoesSquareExist(new_x, new_y);
-            bool does_square_have_enemy_piece = Opp_side.Pieces[new_x][new_y];
+            bool does_square_have_enemy_piece = Opp_side->Pieces[new_x][new_y];
 
             if ((new_x== x && new_y == y) || !does_square_exist) {continue;}
-            if (!does_square_have_enemy_piece && IsThereAPiece(Cur_side, Opp_side, new_x, new_y)) {continue;}
+            if (!does_square_have_enemy_piece && IsThereAPiece(*Cur_side, *Opp_side, new_x, new_y)) {continue;}
 
-            RegisterMove(new_x, new_y, KingPos, Moves, &count, &Opp_side, 'K');
+            RegisterMove(new_x, new_y, KingPos, Moves, &count, Opp_side, 'K');
         }
     }
 
@@ -377,7 +377,7 @@ bool CanCastle(Side Cur_side, move * MoveBuf, int * ind) {
         canlongcastle = !IsBackRankAttacked(rx, kx, Cur_side);
         if (canlongcastle) {
           move LongCastle; LongCastle.promotion = 'K';
-          LongCastle.piece = 'K'; LongCastle.x = 3;
+          LongCastle.piece = 'K'; LongCastle.x = 2;
           LongCastle.y = backrank; LongCastle.oy = backrank;
           LongCastle.ox = kx; MoveBuf[len] = LongCastle;
       }
@@ -390,7 +390,7 @@ bool CanCastle(Side Cur_side, move * MoveBuf, int * ind) {
     return false;
 
 }
-int BishopMoves(Side Cur_side, Side Opp_side, int BishopPos[2], move * Moves) {
+int BishopMoves(Side * Cur_side, Side * Opp_side, int BishopPos[2], move * Moves) {
 
     int control = 0;
     int Increment[2] = {1,1}; control = GetAttack(BishopPos, Cur_side, Opp_side, Increment, Moves, control);
@@ -402,7 +402,7 @@ int BishopMoves(Side Cur_side, Side Opp_side, int BishopPos[2], move * Moves) {
 
 }
 
-int RookMoves(Side Cur_side, Side Opp_side, int RookPos[2], move * Moves) {
+int RookMoves(Side * Cur_side, Side * Opp_side, int RookPos[2], move * Moves) {
 
     int control = 0;
     int Increment[2] = {1,0}; control = GetAttack(RookPos, Cur_side, Opp_side, Increment, Moves, control);
@@ -415,7 +415,7 @@ int RookMoves(Side Cur_side, Side Opp_side, int RookPos[2], move * Moves) {
 
 }
 
-int QueenMoves(Side Cur_side, Side Opp_side, int QueenPos[2], move * Moves) {
+int QueenMoves(Side * Cur_side, Side * Opp_side, int QueenPos[2], move * Moves) {
 
     int control = RookMoves(Cur_side, Opp_side, QueenPos, Moves);
     control += BishopMoves(Cur_side, Opp_side, QueenPos, Moves+control);
