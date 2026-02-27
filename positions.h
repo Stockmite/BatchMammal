@@ -45,7 +45,7 @@ MoveList OrderMoves(MoveList UnorderedMoves, int len, Board CurBoard) {
 
         if (en_piece != 'a') {
 
-            if (IsMoveUnsafe) {
+            if (!IsMoveUnsafe) {
                 len1++;
                 Captures = realloc(Captures, sizeof(move)*len1);
                 Captures[len1-1] = CurMove; continue;
@@ -163,15 +163,6 @@ void ViewBoard(Board CurBoard) {
     for (int y=0; y<8; y++) {
         for (int x=0; x<8; x++) {
             printf("%c ", CurBoard.BSide.PieceTypes[x][7 - y]);
-        }
-        printf("\n");
-    }
-
-    printf("\n \n \n");
-
-    for (int y=0; y<8; y++) {
-        for (int x=0; x<8; x++) {
-            printf("%d ", CurBoard.BSide.Attacks[x][7 - y] || CurBoard.WSide.Attacks[x][7 - y] );
         }
         printf("\n");
     }
@@ -666,14 +657,6 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
                                                     //resigning the moment it sees forced checkmate
                     BestLineVal = bufval - (50.0f * cur_depth * bias);
                     break;
-                }
-
-                int kx = Cur_side->KingPos[0]; int ky = Cur_side->KingPos[1];
-                if (Cur_side->Attacks[kx][ky]) {
-                    if (ind == 0) {
-                        BestLineVal = 2000.0f * Opp_side->direction;
-                    }
-                    continue;
                 }
                  
                 if (cur_depth+1 < depth || IsthereAcapture(BufMoves, buflen, TempBoard)) {
