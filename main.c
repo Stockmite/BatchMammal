@@ -145,26 +145,31 @@ int main() {
     float eval = 0.0f;
 
     while (MainBoard.BSide.KingPos[0] != -1 && MainBoard.WSide.KingPos[0] != -1) { 
+
+        eval = Evaluate(MainBoard, &BestMove, white);
+        printf("The evaluation is: %f\n", eval);
+        printf("I'll play: %c-> %c%d (%c%d) {%c}\n", BestMove.piece, alphabet[BestMove.x], BestMove.y + 1, alphabet[BestMove.ox], BestMove.oy + 1, BestMove.promotion);
+        MakeAMove(BestMove, &MainBoard.WSide, &MainBoard.BSide);         
         
-        char* str = malloc(sizeof(char)*8);
+         ViewBoard(MainBoard);
+        
+        //char* str = malloc(sizeof(char)*8);
 
-        printf("Make a Move!: ");
-        scanf("%s", str);
-        str = realloc(str, (size_t)strlen(str));
-        fflush(stdin);
-
-        PlayMove(str, &MainBoard.WSide, &MainBoard.BSide);
-        ViewBoard(MainBoard);
-        free(str); str = NULL;
-
-        ViewBoard(MainBoard);
+        //printf("Make a Move!: ");
+        //scanf("%s", str);
+        //str = realloc(str, (size_t)strlen(str));
+        //fflush(stdin);
 
         eval = Evaluate(MainBoard, &BestMove, black);
         printf("The evaluation is: %f\n", eval);
         printf("I'll play: %c-> %c%d (%c%d) {%c}\n", BestMove.piece, alphabet[BestMove.x], BestMove.y + 1, alphabet[BestMove.ox], BestMove.oy + 1, BestMove.promotion);
-        MakeAMove(BestMove, &MainBoard.BSide, &MainBoard.WSide);         
-        
-         ViewBoard(MainBoard);
+        MakeAMove(BestMove, &MainBoard.BSide, &MainBoard.WSide);      
+
+        //PlayMove(str, &MainBoard.BSide, &MainBoard.WSide);
+        //ViewBoard(MainBoard);
+        //free(str); str = NULL;
+
+        ViewBoard(MainBoard);
 
 
     }

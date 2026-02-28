@@ -7,7 +7,7 @@
 
 char alphabet[] = "abcdefgh";
 
-#define depth 6
+#define depth 8
 
 int contr = 0;
 
@@ -663,10 +663,6 @@ float JudgeABranch(Board CurBoard, move * CandidateMoves, int len, int cur_depth
                 }
                      //Behold, recursive functions!
                else {free(BufMoves); BufMoves = NULL;}
-
-               if (cur_depth == 0) {
-                printf("%c-> %c%d (%c%d) : %f\n",ChosenMove.piece, alphabet[ChosenMove.x], ChosenMove.y + 1, alphabet[ChosenMove.ox], ChosenMove.oy + 1, bufval);
-               }
 
                 bool IsBestMove = (turn == white) ? bufval > BestLineVal : bufval < BestLineVal;
                 if (IsBestMove) {
