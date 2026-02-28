@@ -7,7 +7,8 @@
 
 char alphabet[] = "abcdefgh";
 
-#define depth 4
+#define depth 6
+
 int contr = 0;
 
 typedef move * MoveList;
@@ -385,7 +386,7 @@ float PawnActivity(int PawnPos[2], int dire, Side Opp_side) {
     float lx = 5.0f - fabs((float)x - 3.5f) + 0.5f;
     float ly = (IsPawnPassed(x,y,Opp_side)) ? (float)rel_y : 5.0f - (fabs((3.5f - (float)y)) + 0.5f);
     float b = lx * ly;
-    return b * 0.1f;
+    return b * 0.07f;
 }
 
 move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int * piece_count, bool turn) {
@@ -397,6 +398,7 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
     Side WSide = CurBoard.WSide;
     Side BSide = CurBoard.BSide;
     Side Sides[2] = {BSide, WSide};
+    Side * SidePtr[2] = {&BSide, &WSide};
 
     char * Wpieces = Get_Pieces(WSide);
     char * Bpieces = Get_Pieces(BSide);
@@ -470,12 +472,6 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
                 Opp_side = &WSide;
             }
 
-            if (Cur_side->Pieces[x][y] || Opp_side->Pieces[x][y]) {
-                char piece = Cur_side->PieceTypes[x][y];
-                float dif = Cur_side->Attacks[x][y] - GetPieceValue(piece);
-                if (dif < 0 && piece != 'K') {material -= dif * dire;}
-            }
-
             switch (Cur_side->PieceTypes[x][y]) {
                 case 'p':
                     activity += PawnActivity(Pos, dire, *Opp_side) * dire;
@@ -529,7 +525,7 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
                 case 'K':
                     CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (len + 8));
                     *ind = len + KingMoves(Cur_side, Opp_side, Pos, CandidateMoves+len);
-                    king_safety -= ((float)(*ind - len) * dire) * 0.00001f;
+                    king_safety -= ((float)(*ind - len) * dire) * 0.001f;
                     CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind+1));
                     break;                                                                  
                 case 'B':
@@ -581,7 +577,7 @@ move * EvaluateSpecificPosition(Board CurBoard, float * eval_buf, int * ind, int
     }
 
       CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind + 5));
-      bool CanSideCastle = CanCastle(Sides[turn], CandidateMoves+*ind, ind);
+      bool CanSideCastle = CanCastle(*SidePtr[turn], CandidateMoves+*ind, ind);
       CandidateMoves = (move*)realloc(CandidateMoves, sizeof(move) * (*ind+2));
     
     free(BufMoves); BufMoves = NULL;
